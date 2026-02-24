@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    name: "Tests — Python ${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      # Install CPU-only PyTorch to avoid downloading CUDA wheels in CI
+      # (saves ~1 GB and several minutes per run)
+      - name: Install CPU-only PyTorch
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install package + test dependencies
+        run: |
+          pip install -e ".[test]"
+
+      - name: Run tests
+        run: |
+          pytest tests/ --color=yes
+
+      # Upload the visual plots so they can be reviewed in the Actions UI
+      # even when there is no local Python environment available.
+      - name: Upload visual plots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-plots-py${{ matrix.python-version }}
+          path: tests/plots/
+          if-no-files-found: warn
+          retention-days: 30

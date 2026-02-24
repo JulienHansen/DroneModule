@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=61.0"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "drone-control"
@@ -13,6 +13,16 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0",
+    "matplotlib>=3.7",
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["drone_control*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-v --tb=short"
