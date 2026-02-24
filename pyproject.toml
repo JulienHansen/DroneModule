@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "drone-control"
+version = "0.1.0"
+description = "Modular drone controller library with YAML configuration support"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0",
+    "pyyaml>=6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["drone_control*"]

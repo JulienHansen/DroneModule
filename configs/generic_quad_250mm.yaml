@@ -1,0 +1,64 @@
+# ============================================================
+# Generic 250 mm 5-inch quadrotor — example configuration
+# ============================================================
+# Representative of a lightweight 5" freestyle/research quad
+# (~250 g all-up weight, 2306 motors, 5" props).
+#
+# NOTE: gains below are reasonable starting points only.
+# Real tuning requires flight testing or system identification.
+#
+# Compared to the Crazyflie:
+#   - ~10× heavier  →  higher absolute torques needed
+#   - ~100× higher inertia  →  lower kp on rate (same α response)
+#   - Higher thrust margin  →  more aggressive position control possible
+# ============================================================
+
+drone:
+  name: "Generic 250mm 5-inch quad"
+  mass: 0.250            # kg  (~250 g all-up weight)
+  inertia:               # Principal moments [kg·m²]
+    ixx: 2.5e-3          # Roll  axis
+    iyy: 2.5e-3          # Pitch axis
+    izz: 4.5e-3          # Yaw   axis (larger due to motor arm layout)
+  max_thrust: 12.0       # N  (4 × ~3 N per motor at full throttle)
+
+controllers:
+
+  # ----------------------------------------------------------
+  # Attitude controller
+  # ----------------------------------------------------------
+  attitude:
+    freq_rate_hz:  500   # Typical inner loop on a 32-bit FC
+    freq_angle_hz: 100   # Outer loop (position hold / auto modes)
+
+    # Inner loop: body-rate error [rad/s] → angular acceleration [rad/s²]
+    rate:
+      roll:  { kp: 25.0, ki: 5.0,  kd: 0.5, tau: 0.005, limit: 50.265 }
+      pitch: { kp: 25.0, ki: 5.0,  kd: 0.5, tau: 0.005, limit: 50.265 }
+      yaw:   { kp: 15.0, ki: 2.0,  kd: 0.0, tau: 0.005, limit: 25.133 }
+
+    # Outer loop: angle error [rad] → body-rate setpoint [rad/s]
+    angle:
+      roll:  { kp: 6.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 15.708 }
+      pitch: { kp: 6.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 15.708 }
+      yaw:   { kp: 4.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 10.0   }
+
+  # ----------------------------------------------------------
+  # Position controller
+  # ----------------------------------------------------------
+  position:
+    freq_vel_hz: 100
+    freq_pos_hz: 50
+
+    max_thrust_scale: 0.85
+    max_horizontal_angle_deg: 35.0   # More aggressive lean than Crazyflie
+
+    velocity:
+      vx: { kp: 2.0, ki: 0.1, kd: 0.0, tau: 0.10, limit: 9999.0 }
+      vy: { kp: 2.0, ki: 0.1, kd: 0.0, tau: 0.10, limit: 9999.0 }
+      vz: { kp: 2.0, ki: 0.2, kd: 0.0, tau: 0.10, limit: 9999.0 }
+
+    position:
+      x: { kp: 4.0, ki: 0.0, kd: 0.8, tau: 0.10, limit: 8.0 }
+      y: { kp: 4.0, ki: 0.0, kd: 0.8, tau: 0.10, limit: 8.0 }
+      z: { kp: 4.0, ki: 0.2, kd: 2.0, tau: 0.10, limit: 5.0 }

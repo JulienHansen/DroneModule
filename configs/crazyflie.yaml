@@ -1,0 +1,75 @@
+# ============================================================
+# Crazyflie 2.1 — drone configuration
+# ============================================================
+# Gains match the Crazyflie firmware cascade PID (pid_attitude.c)
+# adapted for the vectorized Python simulation.
+#
+# Unit conventions:
+#   mass          [kg]
+#   inertia       [kg·m²]
+#   max_thrust    [N]  — total thrust of all 4 motors combined
+#   freq_*_hz     [Hz]
+#   PID limits    [same unit as PID output]
+#     rate  loop output  = angular acceleration  [rad/s²]
+#     angle loop output  = angular rate          [rad/s]
+#     vel   loop output  = linear  acceleration  [m/s²]
+#     pos   loop output  = linear  velocity      [m/s]
+# ============================================================
+
+drone:
+  name: "Crazyflie 2.1"
+  mass: 0.027            # kg  (~27 g)
+  inertia:               # Principal moments, diagonal tensor [kg·m²]
+    ixx: 1.657e-5
+    iyy: 1.657e-5
+    izz: 2.900e-5
+  max_thrust: 0.638      # N  (4 × ~160 mN brushless motors, measured)
+
+controllers:
+
+  # ----------------------------------------------------------
+  # Attitude controller  (angle outer loop + rate inner loop)
+  # ----------------------------------------------------------
+  attitude:
+    freq_rate_hz:  100   # Inner (rate)  loop frequency
+    freq_angle_hz: 100   # Outer (angle) loop frequency
+
+    # Inner loop: body-rate error [rad/s] → angular acceleration [rad/s²]
+    # Limit = 8 rev/s = 8 × 2π rad/s² ≈ 50.265 rad/s²
+    rate:
+      roll:  { kp: 50.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 50.265 }
+      pitch: { kp: 50.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 50.265 }
+      yaw:   { kp: 50.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 50.265 }
+
+    # Outer loop: angle error [rad] → body-rate setpoint [rad/s]
+    # Limit = 2.5 rev/s = 2.5 × 2π rad/s ≈ 15.708 rad/s
+    angle:
+      roll:  { kp: 4.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 15.708 }
+      pitch: { kp: 4.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 15.708 }
+      yaw:   { kp: 3.0, ki: 0.0, kd: 0.0, tau: 0.01, limit: 15.708 }
+
+  # ----------------------------------------------------------
+  # Position controller  (position outer loop + velocity inner loop)
+  # ----------------------------------------------------------
+  position:
+    freq_vel_hz: 100     # Inner (velocity) loop frequency
+    freq_pos_hz: 100     # Outer (position) loop frequency
+
+    # Safety cap on thrust: effective max = max_thrust_scale × drone.max_thrust
+    max_thrust_scale: 0.8
+
+    # Maximum roll/pitch angle commanded by the velocity controller [deg]
+    max_horizontal_angle_deg: 30.0
+
+    # Inner loop: velocity error [m/s] → acceleration setpoint [m/s²]
+    # (high limit = virtually unclamped; saturation handled geometrically for xy)
+    velocity:
+      vx: { kp: 1.0, ki: 0.0, kd: 0.0, tau: 0.10, limit: 9999.0 }
+      vy: { kp: 1.0, ki: 0.0, kd: 0.0, tau: 0.10, limit: 9999.0 }
+      vz: { kp: 1.0, ki: 0.0, kd: 0.0, tau: 0.10, limit: 9999.0 }
+
+    # Outer loop: position error [m] → velocity setpoint [m/s]
+    position:
+      x: { kp: 5.0, ki: 0.0, kd: 1.0, tau: 0.10, limit: 10.0 }
+      y: { kp: 5.0, ki: 0.0, kd: 1.0, tau: 0.10, limit: 10.0 }
+      z: { kp: 5.0, ki: 0.0, kd: 3.5, tau: 0.10, limit:  5.0 }
