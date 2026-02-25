@@ -1,7 +1,8 @@
 site_name: drone-control
 site_description: Vectorized PID controllers for quadrotor drones
 site_author: DroneStandalone contributors
-repo_url: https://github.com/your-org/DroneStandalone
+site_url: https://julienhansen.github.io/DroneStandalone/
+repo_url: https://github.com/julienhansen/DroneStandalone
 
 theme:
   name: material
