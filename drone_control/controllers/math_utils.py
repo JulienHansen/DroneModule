@@ -113,3 +113,10 @@ def matrix_from_quat(quat: torch.Tensor) -> torch.Tensor:
 def normalize(vec: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
     """Normalise *vec* along its last dimension."""
     return vec / (torch.linalg.norm(vec, dim=-1, keepdim=True).clamp_min(eps))
+
+
+def expand_to(tensor: torch.Tensor, reference: torch.Tensor) -> torch.Tensor:
+    """Prepend size-1 dims until *tensor* has the same rank as *reference*, then expand."""
+    while tensor.dim() < reference.dim():
+        tensor = tensor.unsqueeze(0)
+    return tensor.expand(reference.shape)

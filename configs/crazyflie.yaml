@@ -132,3 +132,23 @@ controllers:
     thrust_min:     20000.0   # Minimum throttle [PWM]
     thrust_cmd_max: 65535.0   # Full-scale throttle [PWM]
     vel_thrust_scale: 1000.0  # (m/s²) → PWM conversion
+
+  # ----------------------------------------------------------
+  # Lee geometric controller  (Lee et al., CDC 2010)
+  # ----------------------------------------------------------
+  # All gains operate in SI units throughout.
+  #
+  # Unit conventions:
+  #   position_gain     [N/m]         pos error [m]     → force     [N]
+  #   velocity_gain     [N·s/m]       vel error [m/s]   → force     [N]
+  #   attitude_gain     [N·m/rad]     att error [rad]   → moment    [N·m]
+  #   angular_rate_gain [N·m·s/rad]   rate error [rad/s]→ moment    [N·m]
+  #
+  # Tuned for Crazyflie 2.1 (mass = 0.027 kg, I ≈ 1.66e-5 kg·m²).
+  # Derived via pole placement (ω_pos ≈ 4 rad/s, ω_att ≈ 60 rad/s, ζ = 0.7).
+  # ----------------------------------------------------------
+  lee:
+    position_gain:     [0.50, 0.50, 0.70]    # k_pos
+    velocity_gain:     [0.20, 0.20, 0.30]    # k_vel
+    attitude_gain:     [0.06, 0.06, 0.030]   # k_R
+    angular_rate_gain: [0.002, 0.002, 0.001] # k_Omega

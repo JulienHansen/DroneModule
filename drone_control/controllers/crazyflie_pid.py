@@ -30,7 +30,7 @@ from typing import Optional, Tuple
 
 import torch
 
-from .math_utils import quat_apply_inverse, euler_xyz_from_quat
+from .math_utils import quat_apply_inverse, euler_xyz_from_quat, expand_to
 from .pid import PID_Vectorized
 
 DEG2RAD = math.pi / 180.0
@@ -62,12 +62,6 @@ DEFAULT_LIMITS: dict = {
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _expand_to(tensor: torch.Tensor, reference: torch.Tensor) -> torch.Tensor:
-    while tensor.dim() < reference.dim():
-        tensor = tensor.unsqueeze(0)
-    return tensor.expand(reference.shape)
-
 
 def _as_tensor(value, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
     if isinstance(value, torch.Tensor):
@@ -422,8 +416,8 @@ class CrazyfliePIDController:
 
         self._ensure_buffers(pos.shape[0])
 
-        target_pos = _expand_to(_as_tensor(target_pos, self.device, pos.dtype),     pos)     if target_pos is not None else pos.clone()
-        target_vel = _expand_to(_as_tensor(target_vel, self.device, lin_vel.dtype), lin_vel) if target_vel is not None else torch.zeros_like(lin_vel)
+        target_pos = expand_to(_as_tensor(target_pos, self.device, pos.dtype),     pos)     if target_pos is not None else pos.clone()
+        target_vel = expand_to(_as_tensor(target_vel, self.device, lin_vel.dtype), lin_vel) if target_vel is not None else torch.zeros_like(lin_vel)
 
         euler    = euler_xyz_from_quat(quat)
         att_actual = torch.stack(euler, dim=-1)          # [N, 3]  (roll, pitch, yaw)
@@ -507,7 +501,7 @@ class CrazyfliePIDController:
         if ctx["update_att"]:
             target_att = ctx["target_attitude"]
             att_des = ctx["att_actual"].clone() if target_att is None \
-                else _expand_to(_as_tensor(target_att, self.device, ctx["ang_vel"].dtype), ctx["ang_vel"])
+                else expand_to(_as_tensor(target_att, self.device, ctx["ang_vel"].dtype), ctx["ang_vel"])
             att_des[..., 2:3] = ctx["yaw_sp"]
             self._att_sp = att_des
         if ctx["thrust_cmd"] is not None:
@@ -518,7 +512,7 @@ class CrazyfliePIDController:
         if ctx["target_body_rates"] is None:
             self._rate_sp = torch.zeros_like(ctx["ang_vel"])
         else:
-            self._rate_sp = _expand_to(
+            self._rate_sp = expand_to(
                 _as_tensor(ctx["target_body_rates"], self.device, ctx["ang_vel"].dtype), ctx["ang_vel"]
             )
         if ctx["thrust_cmd"] is not None:
@@ -554,8 +548,8 @@ class CrazyfliePIDController:
         rate_error = rate_sp - rate_meas
         self._rate_integral = torch.clamp(
             self._rate_integral + rate_error * self.dt,
-            -_expand_to(self._rate_integral_limit, self._rate_integral),
-             _expand_to(self._rate_integral_limit, self._rate_integral),
+            -expand_to(self._rate_integral_limit, self._rate_integral),
+             expand_to(self._rate_integral_limit, self._rate_integral),
         )
 
         rate_meas_dot        = (rate_meas - self._prev_rate_meas) / self.dt

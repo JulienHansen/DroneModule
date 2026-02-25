@@ -108,6 +108,20 @@ class DronePhysicsConfig:
 
 
 # ---------------------------------------------------------------------------
+# Lee geometric controller config
+# ---------------------------------------------------------------------------
+
+@dataclass
+class LeeControllerConfig:
+    """Gain vectors for the geometric (Lee 2010) controller."""
+    position_gain:     list   # k_pos  [3]  pos error  → force      [N/m]
+    velocity_gain:     list   # k_vel  [3]  vel error  → force      [N·s/m]
+    attitude_gain:     list   # k_att  [3]  att error  → moment     [N·m/rad]
+    angular_rate_gain: list   # k_rate [3]  rate error → moment     [N·m·s/rad]
+    max_acceleration:  float = field(default=math.inf)
+
+
+# ---------------------------------------------------------------------------
 # Top-level config
 # ---------------------------------------------------------------------------
 
@@ -118,7 +132,10 @@ class DroneConfig:
     position: PositionControllerConfig
     # Raw params dict for CrazyfliePIDController.
     # Present only when the YAML contains a ``controllers.crazyflie_pid`` section.
-    crazyflie_pid: Optional[dict] = field(default=None)
+    crazyflie_pid: Optional[dict]             = field(default=None)
+    # Gains for LeePositionController.
+    # Present only when the YAML contains a ``controllers.lee`` section.
+    lee:           Optional[LeeControllerConfig] = field(default=None)
 
 
 # ---------------------------------------------------------------------------
@@ -199,9 +216,22 @@ def load_config(path: str | Path) -> DroneConfig:
     # Optional CrazyfliePIDController params (passed as-is to the controller)
     crazyflie_pid = raw.get("controllers", {}).get("crazyflie_pid", None)
 
+    # Optional Lee geometric controller gains
+    lee_raw = raw.get("controllers", {}).get("lee", None)
+    lee: Optional[LeeControllerConfig] = None
+    if lee_raw is not None:
+        lee = LeeControllerConfig(
+            position_gain=list(lee_raw["position_gain"]),
+            velocity_gain=list(lee_raw["velocity_gain"]),
+            attitude_gain=list(lee_raw["attitude_gain"]),
+            angular_rate_gain=list(lee_raw["angular_rate_gain"]),
+            max_acceleration=float(lee_raw.get("max_acceleration", math.inf)),
+        )
+
     return DroneConfig(
         physics=physics,
         attitude=attitude,
         position=position,
         crazyflie_pid=crazyflie_pid,
+        lee=lee,
     )
