@@ -1,0 +1,2584 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Vectorized PID controllers for quadrotor drones">
+      
+      
+        <meta name="author" content="DroneStandalone contributors">
+      
+      
+        <link rel="canonical" href="https://julienhansen.github.io/DroneStandalone/firmware-architecture/">
+      
+      
+        <link rel="prev" href="../architecture/">
+      
+      
+        <link rel="next" href="../api/controller/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+    
+    
+      
+        <title>Firmware Architecture - drone-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#modern-quadcopter-firmware-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="drone-control" class="md-header__button md-logo" aria-label="drone-control" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            drone-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Firmware Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="cyan"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="cyan"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/julienhansen/DroneStandalone" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Firmware Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/controller/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../config/yaml-format/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  YAML Config Format
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../tuning/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Gain Tuning
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="drone-control" class="md-nav__button md-logo" aria-label="drone-control" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    drone-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/julienhansen/DroneStandalone" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Firmware Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Firmware Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-high-level-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. High-Level Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-sensors-and-acquisition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Sensors and Acquisition
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Sensors and Acquisition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-imu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 IMU
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-barometer-and-gps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Barometer and GPS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-imu-signal-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. IMU Signal Processing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. IMU Signal Processing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-static-hardware-anti-alias-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Static hardware anti-alias filter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-rpm-notch-filters-betaflight-dynamic-notch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 RPM-notch filters (Betaflight Dynamic Notch)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-gyro-low-pass-filter-lpf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Gyro low-pass filter (LPF)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-accelerometer-lpf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Accelerometer LPF
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-state-estimation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. State Estimation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. State Estimation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-complementary-filter-mahony-madgwick" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Complementary filter (Mahony / Madgwick)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-extended-kalman-filter-ekf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Extended Kalman Filter (EKF)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-position-estimation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Position estimation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-reference-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Reference Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Reference Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-rc-input-decoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 RC input decoding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-flight-mode-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Flight mode stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-rate-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Rate profiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-trajectory-planning-autonomous-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Trajectory planning (autonomous mode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-control-cascade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Control Cascade
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Control Cascade">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-position-loop-1050-hz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Position loop (10–50 Hz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-velocity-loop-50100-hz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Velocity loop (50–100 Hz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-attitude-angle-loop-100500-hz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Attitude (angle) loop (100–500 Hz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-rate-loop-500-hz-8-khz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Rate loop (500 Hz – 8 kHz)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.4 Rate loop (500 Hz – 8 kHz)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#classical-pid-betaflight-crazyflie" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classical PID (Betaflight, Crazyflie)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indi-incremental-nonlinear-dynamic-inversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INDI — Incremental Nonlinear Dynamic Inversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-control-allocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Control Allocation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Control Allocation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-the-allocation-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 The allocation matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-saturation-and-prioritisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Saturation and prioritisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-over-actuated-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Over-actuated systems
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-motor-and-esc-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Motor and ESC Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Motor and ESC Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-protocol-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Protocol evolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-esc-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 ESC firmware
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-motor-dynamics-and-latency-budget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Motor dynamics and latency budget
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-failsafe-and-safety-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Failsafe and Safety Systems
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Failsafe and Safety Systems">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-rc-link-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 RC link loss
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-sensor-health-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Sensor health monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-arming-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Arming logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-firmware-comparisons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Firmware Comparisons
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Firmware Comparisons">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-betaflight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Betaflight
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-px4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 PX4
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-crazyflie-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Crazyflie firmware
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-connecting-to-this-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Connecting to This Package
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CrazyfliePIDController
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/lee_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LeePositionController
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/mixer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QuadMixer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/rate_profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Profiles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/pid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PID_Vectorized
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/loader/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/yaml-format/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YAML Config Format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tuning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gain Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-high-level-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. High-Level Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-sensors-and-acquisition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Sensors and Acquisition
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Sensors and Acquisition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-imu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 IMU
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-barometer-and-gps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Barometer and GPS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-imu-signal-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. IMU Signal Processing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. IMU Signal Processing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-static-hardware-anti-alias-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Static hardware anti-alias filter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-rpm-notch-filters-betaflight-dynamic-notch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 RPM-notch filters (Betaflight Dynamic Notch)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-gyro-low-pass-filter-lpf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Gyro low-pass filter (LPF)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-accelerometer-lpf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Accelerometer LPF
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-state-estimation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. State Estimation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. State Estimation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-complementary-filter-mahony-madgwick" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Complementary filter (Mahony / Madgwick)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-extended-kalman-filter-ekf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Extended Kalman Filter (EKF)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-position-estimation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Position estimation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-reference-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Reference Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Reference Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-rc-input-decoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 RC input decoding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-flight-mode-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Flight mode stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-rate-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Rate profiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-trajectory-planning-autonomous-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Trajectory planning (autonomous mode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-control-cascade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Control Cascade
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Control Cascade">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-position-loop-1050-hz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Position loop (10–50 Hz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-velocity-loop-50100-hz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Velocity loop (50–100 Hz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-attitude-angle-loop-100500-hz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Attitude (angle) loop (100–500 Hz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-rate-loop-500-hz-8-khz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Rate loop (500 Hz – 8 kHz)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.4 Rate loop (500 Hz – 8 kHz)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#classical-pid-betaflight-crazyflie" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classical PID (Betaflight, Crazyflie)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indi-incremental-nonlinear-dynamic-inversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INDI — Incremental Nonlinear Dynamic Inversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-control-allocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Control Allocation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Control Allocation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-the-allocation-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 The allocation matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-saturation-and-prioritisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Saturation and prioritisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-over-actuated-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Over-actuated systems
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-motor-and-esc-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Motor and ESC Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Motor and ESC Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-protocol-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Protocol evolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-esc-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 ESC firmware
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-motor-dynamics-and-latency-budget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Motor dynamics and latency budget
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-failsafe-and-safety-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Failsafe and Safety Systems
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Failsafe and Safety Systems">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-rc-link-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 RC link loss
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-sensor-health-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Sensor health monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-arming-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Arming logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-firmware-comparisons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Firmware Comparisons
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Firmware Comparisons">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-betaflight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Betaflight
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-px4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 PX4
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-crazyflie-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Crazyflie firmware
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-connecting-to-this-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Connecting to This Package
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="modern-quadcopter-firmware-architecture">Modern Quadcopter Firmware Architecture</h1>
+<p>This document describes the complete sensor-to-actuator pipeline of a modern quadcopter flight controller, from raw IMU samples to PWM/DShot commands sent to the ESCs. Three reference firmwares are compared throughout: <strong>Betaflight</strong> (racing/freestyle), <strong>PX4</strong> (autonomous UAV), and <strong>Crazyflie</strong> (research micro-drone).</p>
+<hr />
+<h2 id="1-high-level-pipeline">1. High-Level Pipeline</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌──────────────┐   raw        ┌──────────────┐  filtered    ┌──────────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│   Sensors    │ ──────────▶  │  IMU Filter  │ ──────────▶  │ State Estimator  │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│ IMU/Baro/GPS │              │  (LPF / RPM) │              │  (EKF/Mahony)    │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>└──────────────┘              └──────────────┘              └────────┬─────────┘
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                                                                      │ pose, vel, rates
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                                                                      ▼
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>┌──────────────┐  setpoint    ┌──────────────┐              ┌────────────────────┐
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│ RC / Mission │ ──────────▶  │  Reference   │ ──────────▶  │  Control Cascade   │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   Planner    │              │  Generator   │              │  pos→vel→att→rate  │
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>└──────────────┘              └──────────────┘              └────────┬───────────┘
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>                                                                      │ thrust + moments
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                                                                      ▼
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>                                                             ┌────────────────────┐
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>                                                             │  Control Allocator │
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>                                                             │    (QuadMixer)     │
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>                                                             └────────┬───────────┘
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>                                                                      │ ω per motor
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>                                                                      ▼
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>                                                             ┌────────────────────┐
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>                                                             │   Motor / ESC      │
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>                                                             │ DShot / OneShot    │
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>                                                             └────────────────────┘
+</code></pre></div>
+<hr />
+<h2 id="2-sensors-and-acquisition">2. Sensors and Acquisition</h2>
+<h3 id="21-imu">2.1 IMU</h3>
+<p>The Inertial Measurement Unit is the heart of every flight controller. It provides:</p>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Typical sensor</th>
+<th>Rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Angular velocity (gyroscope)</td>
+<td>ICM-42688-P, MPU-6000</td>
+<td>3.2–8 kHz</td>
+</tr>
+<tr>
+<td>Linear acceleration (accelerometer)</td>
+<td>Same die</td>
+<td>1–4 kHz</td>
+</tr>
+<tr>
+<td>Magnetic heading (magnetometer, optional)</td>
+<td>QMC5883L</td>
+<td>100–200 Hz</td>
+</tr>
+</tbody>
+</table>
+<p>The gyroscope is the most critical signal: it feeds the innermost (rate) control loop. Any latency or noise here directly degrades attitude tracking.</p>
+<p><strong>Oversampling.</strong> Modern firmwares (Betaflight ≥ 4.0) run the IMU SPI bus at 8 MHz and read the sensor at its full ODR (e.g., 8 kHz for the ICM-42688-P), then decimate to the control loop rate. This converts quantisation noise into broadband noise that is more easily filtered.</p>
+<h3 id="22-barometer-and-gps">2.2 Barometer and GPS</h3>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>Purpose</th>
+<th>Typical rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Barometer (BMP388, DPS310)</td>
+<td>Altitude hold, climb rate</td>
+<td>50–200 Hz</td>
+</tr>
+<tr>
+<td>GPS (M10, ZED-F9P)</td>
+<td>Position hold, return-to-home</td>
+<td>1–20 Hz</td>
+</tr>
+<tr>
+<td>Optical flow (PMW3901)</td>
+<td>Low-altitude position hold (no GPS)</td>
+<td>100–400 Hz</td>
+</tr>
+<tr>
+<td>LiDAR / ToF (VL53L5CX)</td>
+<td>Terrain-following, landing</td>
+<td>30–60 Hz</td>
+</tr>
+</tbody>
+</table>
+<p>GPS and barometer readings are always fused inside the state estimator because their rates are too low to feed control loops directly.</p>
+<hr />
+<h2 id="3-imu-signal-processing">3. IMU Signal Processing</h2>
+<p>Before state estimation, raw sensor data passes through several filtering stages.</p>
+<h3 id="31-static-hardware-anti-alias-filter">3.1 Static hardware anti-alias filter</h3>
+<p>MEMS IMUs include an on-chip low-pass filter configurable via SPI. It is set to slightly below the Nyquist frequency of the ODR. For a 3.2 kHz ODR the cutoff is typically 1.6 kHz.</p>
+<h3 id="32-rpm-notch-filters-betaflight-dynamic-notch">3.2 RPM-notch filters (Betaflight Dynamic Notch)</h3>
+<p>Motor vibrations appear as narrow harmonic peaks in the gyro spectrum at exact multiples of the motor electrical frequency:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>f_vibe = N_poles/2 × RPM/60   (Hz)
+</code></pre></div>
+<p><strong>Bidirectional DShot</strong> (Betaflight ≥ 4.1, PX4 ≥ 1.13) reads back actual motor RPM via the ESC telemetry line at ~1 kHz. Each firmware loop updates per-motor notch filters centered on the 1st, 2nd, and 3rd harmonics. Because the notch follows the exact motor speed, the filter can be very narrow (high Q ≈ 250–500), introducing negligible phase delay at other frequencies.</p>
+<p>Without RPM feedback, firmwares fall back to a dynamic-frequency notch that tracks peaks in the real-time FFT of the gyro signal (Betaflight Dynamic Notch v2).</p>
+<h3 id="33-gyro-low-pass-filter-lpf">3.3 Gyro low-pass filter (LPF)</h3>
+<p>A biquad (2nd-order IIR) or PT1 (1st-order) filter removes broadband high-frequency noise. Typical cutoffs:</p>
+<ul>
+<li><strong>Racing quad</strong>: 200–400 Hz (minimise phase delay → better feel)</li>
+<li><strong>Cinema/freestyle</strong>: 100–200 Hz (smoother at cost of latency)</li>
+<li><strong>Crazyflie</strong>: 80 Hz biquad (small, light, resonant frame)</li>
+</ul>
+<p><strong>Phase lag matters.</strong> Each biquad at 200 Hz introduces roughly 3–8° of phase delay at 50 Hz (the typical mechanical bandwidth). Excessive filtering is a primary cause of oscillations because the PID derivative term amplifies delayed noise.</p>
+<h3 id="34-accelerometer-lpf">3.4 Accelerometer LPF</h3>
+<p>The accelerometer is not used by the rate loop. It only feeds state estimation and is filtered aggressively (10–30 Hz cutoff) because vibration contamination is severe.</p>
+<hr />
+<h2 id="4-state-estimation">4. State Estimation</h2>
+<h3 id="41-complementary-filter-mahony-madgwick">4.1 Complementary filter (Mahony / Madgwick)</h3>
+<p>Used in Betaflight, Crazyflie, and any firmware prioritising speed over accuracy.</p>
+<p><strong>Mahony filter</strong> (Crazyflie default):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ω_mes = (acc × g_est + mag × m_est) × k_P + ∫(·)×k_I
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>ω_filt = ω_gyro + ω_mes
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>q̇ = ½ q ⊗ [0, ω_filt]
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>q ← q / ‖q‖
+</code></pre></div>
+<p>The vector cross-product <code>acc × g_est</code> gives a rotation error proportional to the tilt. The integral term removes gyro bias. This runs at the full IMU rate (500–1000 Hz on Crazyflie).</p>
+<p><strong>Madgwick filter</strong> (slightly more accurate, same cost): uses gradient descent on the quaternion to minimise the algebraic error between predicted and measured gravity/magnetic directions.</p>
+<p>Both filters have one tunable parameter (the fusion gain <code>β</code> for Madgwick, <code>k_P/k_I</code> for Mahony) that sets the trade-off between gyro tracking (low gain = trusts gyro, drifts slowly) and accelerometer correction (high gain = rejects drift, noisier).</p>
+<h3 id="42-extended-kalman-filter-ekf">4.2 Extended Kalman Filter (EKF)</h3>
+<p>Used in PX4 (<code>ekf2</code>) and for position estimation in Crazyflie.</p>
+<p>The EKF maintains a full state vector:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>x = [p, v, q, b_g, b_a, b_mag, b_wind, ...]ᵀ
+</code></pre></div>
+<p>where <code>p</code> is position, <code>v</code> velocity, <code>q</code> attitude quaternion, and the <code>b_*</code> terms are biases. The prediction step integrates the IMU using Newton–Euler dynamics; the correction step fuses GPS, barometer, magnetometer, optical flow, and visual-inertial odometry (VIO) with individual noise models.</p>
+<p>PX4's <code>ekf2</code> runs at 100–250 Hz. The innovation (measurement residual) is monitored continuously; large innovations trigger automatic sensor fault detection.</p>
+<h3 id="43-position-estimation">4.3 Position estimation</h3>
+<p>For indoor hover without GPS, PX4 and Crazyflie use <strong>optical flow + barometer fusion</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>v_body ≈ f_focal × (flow_px / dt) / altitude
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>p += ∫ R × v_body × dt   (EKF prediction)
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>p_corrected = EKF(baro, flow)
+</code></pre></div>
+<p>For outdoor precision (RTK), a <strong>moving baseline</strong> GPS heading + 5 cm RTK position replaces the magnetometer and barometer respectively.</p>
+<hr />
+<h2 id="5-reference-generation">5. Reference Generation</h2>
+<h3 id="51-rc-input-decoding">5.1 RC input decoding</h3>
+<p>The radio receiver sends commands on SBUS, CRSF, or ELRS at 50–1000 Hz. Raw PWM values (1000–2000 µs) are normalised to [-1, 1]:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>stick = (pwm - 1500) / 500
+</code></pre></div>
+<p>Sticks in this package's <code>rate_profiles.py</code> operate on exactly this normalised input.</p>
+<h3 id="52-flight-mode-stack">5.2 Flight mode stack</h3>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>What RC controls</th>
+<th>Who generates rate setpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Acro</strong></td>
+<td>Body rates directly</td>
+<td>Rate profile (this package)</td>
+</tr>
+<tr>
+<td><strong>Angle</strong></td>
+<td>Euler angle setpoints</td>
+<td>Outer angle PID</td>
+</tr>
+<tr>
+<td><strong>Altitude hold</strong></td>
+<td>Climb rate only</td>
+<td>Outer Z velocity PID</td>
+</tr>
+<tr>
+<td><strong>Position hold</strong></td>
+<td>2D velocity, yaw rate</td>
+<td>Outer XY position PID</td>
+</tr>
+<tr>
+<td><strong>Autonomous</strong></td>
+<td>Waypoints / trajectory</td>
+<td>Trajectory planner</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-rate-profiles">5.3 Rate profiles</h3>
+<p>In Acro mode the stick is passed through a non-linear shaping curve before it becomes a rate setpoint. Four common profiles are implemented in this package (<code>betaflight_rate_profile</code>, <code>raceflight_rate_profile</code>, <code>actual_rate_profile</code>, <code>kiss_rate_profile</code>). They all share the same anatomy:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>rate_sp = non_linear_curve(stick, rc_rate, expo, super_expo, limit)
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>         ──────────────────────────────────────────────────────────
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>         converts normalised stick [-1,1] → body rate [rad/s]
+</code></pre></div>
+<p>A high <code>rc_rate</code> gives fast, nervous response. Adding <code>super_expo</code> provides a deadband near centre while still reaching the same maximum rate at full stick. See <a href="../api/controller/">API Reference</a> for details.</p>
+<h3 id="54-trajectory-planning-autonomous-mode">5.4 Trajectory planning (autonomous mode)</h3>
+<p>For waypoint flight, PX4 runs a <strong>jerk-limited polynomial trajectory planner</strong> (<code>FlightTaskAutoMapper</code>) that generates smooth position/velocity/acceleration references at 50 Hz. Crazyflie uses a similar approach with the Crazyflie Commander stack and the optional <code>trajectorypy</code> high-level controller.</p>
+<hr />
+<h2 id="6-control-cascade">6. Control Cascade</h2>
+<p>All modern quadcopter firmwares use a <strong>cascade (nested-loop) architecture</strong>. Each outer loop runs slower than its inner counterpart, and the output of one loop is the setpoint of the next.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Position  →  Velocity  →  Attitude  →  Body Rate  →  Motor Torque
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>10–50 Hz      50–100 Hz   100–500 Hz    1–8 kHz        —
+</code></pre></div>
+<h3 id="61-position-loop-1050-hz">6.1 Position loop (10–50 Hz)</h3>
+<p><strong>Input</strong>: position setpoint [m], measured position [m]
+<strong>Output</strong>: velocity setpoint [m/s]</p>
+<p>Simple proportional or PD controller. Integrator is usually omitted here and added in the velocity loop instead.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>v_sp = kp_pos × (p_sp - p) + kd_pos × (ṗ_sp - ṗ)
+</code></pre></div>
+<p>In this package: <code>PosController_Vectorized.run_pos()</code>.</p>
+<h3 id="62-velocity-loop-50100-hz">6.2 Velocity loop (50–100 Hz)</h3>
+<p><strong>Input</strong>: velocity setpoint [m/s], measured velocity [m/s]
+<strong>Output</strong>: desired linear acceleration [m/s²] (then decomposed into thrust + attitude)</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>a_des = kp_vel × (v_sp - v) + ki_vel × ∫(v_sp - v) + mass × g × ẑ   # world frame
+</code></pre></div>
+<p>The total desired force vector <code>F_des = mass × a_des</code> is then decomposed:</p>
+<ul>
+<li><strong>Thrust</strong>: <code>T = ‖F_des‖</code> (scalar)</li>
+<li><strong>Desired attitude</strong>: align body-z with <code>F_des / ‖F_des‖</code></li>
+<li><strong>Roll/pitch setpoint</strong>: <code>φ_sp = arctan(-F_des,y / F_des,z)</code>, <code>θ_sp = arctan(F_des,x / F_des,z)</code></li>
+</ul>
+<p>A horizontal angle limit is applied to prevent unreasonable commands: <code>φ_sp, θ_sp ∈ [-30°, 30°]</code>.</p>
+<p>In this package: <code>PosController_Vectorized.run_vel()</code>.</p>
+<h3 id="63-attitude-angle-loop-100500-hz">6.3 Attitude (angle) loop (100–500 Hz)</h3>
+<p><strong>Input</strong>: attitude setpoint (Euler RPY or quaternion), measured attitude
+<strong>Output</strong>: body-rate setpoint [rad/s]</p>
+<p><strong>PID approach</strong> (Betaflight angle mode, Crazyflie):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>ω_sp = kp_att × (q_sp ⊖ q_meas)   # error expressed in body frame
+</code></pre></div>
+<p>The quaternion error <code>q_sp ⊖ q_meas = q_meas⁻¹ ⊗ q_sp</code> is converted to a rotation vector (axis × angle). Yaw is often handled separately to avoid coupling with roll/pitch.</p>
+<p><strong>Geometric (SO(3)) approach</strong> (Lee controller, PX4 mc_att_control):</p>
+<p>The attitude error is computed on the Lie group directly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>e_R = ½ vee(R_desᵀ R - Rᵀ R_des)
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>ω_sp = -kR × e_R - kΩ × (ω - Rᵀ R_des ω_des)
+</code></pre></div>
+<p>This avoids singularities (gimbal lock) present in Euler-angle PID and has globally stable convergence proofs under mild conditions. See <code>LeePositionController</code> in this package.</p>
+<h3 id="64-rate-loop-500-hz-8-khz">6.4 Rate loop (500 Hz – 8 kHz)</h3>
+<p>The rate loop is the fastest and most critical control loop. It runs at the gyroscope sample rate (or half of it on constrained hardware).</p>
+<p><strong>Input</strong>: body-rate setpoint [rad/s] from attitude loop, measured body rates [rad/s]
+<strong>Output</strong>: angular acceleration commands → body moments [N·m] → <code>(T, Mx, My, Mz)</code> wrench</p>
+<h4 id="classical-pid-betaflight-crazyflie">Classical PID (Betaflight, Crazyflie)</h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>e = ω_sp - ω_meas
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>P = kp × e
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>I += ki × e × dt                    # with anti-windup
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>D = -kd × (ω_meas - ω_meas_prev)/dt # D on measurement, not error (prevents derivative kick)
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>output = P + I + D
+</code></pre></div>
+<p>The derivative is applied to the <strong>measurement</strong> (not the error) to avoid impulse spikes when the setpoint steps. Betaflight further applies a dedicated D-term low-pass filter (cutoff 70–150 Hz) separate from the gyro LPF.</p>
+<p><strong>Feed-forward</strong> (Betaflight ≥ 3.5): add a term proportional to the rate setpoint derivative to reduce phase lag on sharp inputs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>FF = kff × (ω_sp - ω_sp_prev) / dt
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>output += FF
+</code></pre></div>
+<h4 id="indi-incremental-nonlinear-dynamic-inversion">INDI — Incremental Nonlinear Dynamic Inversion</h4>
+<p>Used in advanced firmwares (Paparazzi, some PX4 configurations, TU Delft research):</p>
+<p>The idea is to use the gyro acceleration (numerical derivative of ω, filtered) as a direct measurement of the applied torque, and compute motor increments that produce the needed torque correction:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>dω/dt_measured ≈ (ω[k] - ω[k-1]) / dt
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>Δu = G⁻¹ × (dω/dt_desired - dω/dt_measured)
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>u[k] = u[k-1] + Δu
+</code></pre></div>
+<p>where <code>G</code> is the control effectiveness matrix (relates motor speed increments to angular accelerations). INDI is inherently robust to model uncertainty because it operates on increments and relies on measurement rather than a plant model. Its main cost is sensitivity to gyro noise (requires aggressive differentiation).</p>
+<hr />
+<h2 id="7-control-allocation">7. Control Allocation</h2>
+<p>Once the controller outputs a <strong>wrench</strong> <code>[T, Mx, My, Mz]</code>, the allocation step maps it to per-motor speed commands.</p>
+<h3 id="71-the-allocation-matrix">7.1 The allocation matrix</h3>
+<p>For a quadrotor, each motor <code>i</code> at position <code>(xi, yi)</code> contributes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>T  = k_t × Σ ωi²
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>Mx = k_t × Σ yi × ωi²          (roll)
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>My = k_t × Σ (-xi) × ωi²       (pitch)
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>Mz = k_d × Σ si × ωi²          (yaw, si = ±1 spin direction)
+</code></pre></div>
+<p>This gives a linear system <code>wrench = B × ωsq</code> where <code>ωsq = [ω0², ..., ω3²]</code>. The 4×4 allocation matrix <code>B</code> is inverted once at startup:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>ωsq = B⁻¹ × wrench
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>ωi  = √(max(ωsqi, ωmin²))
+</code></pre></div>
+<p><code>QuadMixer</code> in this package implements this exactly. The key parameters are the motor's <strong>thrust coefficient</strong> <code>k_t</code> (N·s²) and <strong>drag coefficient</strong> <code>k_d</code> (N·m·s²), which are identified experimentally (thrust stand measurement).</p>
+<h3 id="72-saturation-and-prioritisation">7.2 Saturation and prioritisation</h3>
+<p>When the desired wrench cannot be achieved (e.g., maximum throttle while demanding a large roll), the allocation must choose what to sacrifice. Two common strategies:</p>
+<ol>
+<li><strong>Simple clamping</strong> (Betaflight): clamp <code>ωi</code> to <code>[ωmin, ωmax]</code> and accept the wrench error.</li>
+<li><strong>Prioritised allocation</strong> (PX4, academic): iteratively scale down lower-priority axes (yaw first, then roll/pitch, then thrust) to remain within motor limits while satisfying higher-priority commands.</li>
+</ol>
+<h3 id="73-over-actuated-systems">7.3 Over-actuated systems</h3>
+<p>Hex- and octorotors have more motors than DOF (6 or 8 vs 4). The pseudo-inverse <code>B† = Bᵀ(BBᵀ)⁻¹</code> minimises the 2-norm of motor speeds for a given wrench. Some allocators additionally minimise power consumption (weighted pseudo-inverse) or distribute load evenly.</p>
+<hr />
+<h2 id="8-motor-and-esc-interface">8. Motor and ESC Interface</h2>
+<h3 id="81-protocol-evolution">8.1 Protocol evolution</h3>
+<table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th>Type</th>
+<th>Rate</th>
+<th>Latency</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standard PWM</td>
+<td>Analog, unidirectional</td>
+<td>50–400 Hz</td>
+<td>~1 ms</td>
+<td>Original RC servo protocol</td>
+</tr>
+<tr>
+<td>OneShot125</td>
+<td>Analog, faster</td>
+<td>2 kHz</td>
+<td>~500 µs</td>
+<td>Narrower pulse, same idea</td>
+</tr>
+<tr>
+<td>Multishot</td>
+<td>Analog</td>
+<td>32 kHz</td>
+<td>~30 µs</td>
+<td>Rarely used now</td>
+</tr>
+<tr>
+<td>DShot150/300/600</td>
+<td>Digital, unidirectional</td>
+<td>2–8 kHz</td>
+<td>~50 µs</td>
+<td>Dominant standard since 2016</td>
+</tr>
+<tr>
+<td>DShot1200</td>
+<td>Digital</td>
+<td>16 kHz</td>
+<td>~25 µs</td>
+<td>High-speed, needs quality wiring</td>
+</tr>
+<tr>
+<td>Bidirectional DShot</td>
+<td>Digital, bidirectional</td>
+<td>2–8 kHz</td>
+<td>~50 µs</td>
+<td>ESC sends RPM eRPM back</td>
+</tr>
+<tr>
+<td>UAVCAN / DroneCAN</td>
+<td>CAN bus</td>
+<td>1 kHz</td>
+<td>~1 ms</td>
+<td>Robotics/autopilot use</td>
+</tr>
+<tr>
+<td>FDCAN</td>
+<td>CAN-FD</td>
+<td>4 kHz</td>
+<td>~250 µs</td>
+<td>Future high-bandwidth CAN</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DShot</strong> encodes the motor command as a 16-bit word: 11 bits of throttle (0–2047), 1 telemetry request bit, and 4-bit CRC. The digital nature eliminates calibration and provides error detection.</p>
+<p><strong>Bidirectional DShot</strong> (also called DShot EDT, extended telemetry) reuses the signal wire: after the FC transmits a DShot frame, it tristates the pin and the ESC transmits back the eRPM using inverted DShot encoding. This enables RPM-linked notch filters as described in Section 3.2.</p>
+<h3 id="82-esc-firmware">8.2 ESC firmware</h3>
+<p>Modern ESCs run <strong>BLHeli_32</strong>, <strong>AM32</strong>, or <strong>BLHeli_S</strong>. They implement:</p>
+<ul>
+<li><strong>FOC (Field-Oriented Control)</strong> or trapezoidal (6-step) commutation</li>
+<li><strong>Active freewheeling</strong>: MOSFETs synchronously rectify during deceleration, recovering energy and reducing motor temperature</li>
+<li><strong>Demag compensation</strong>: corrects back-EMF measurement errors at low RPM (startup)</li>
+<li><strong>RPM governor</strong> (some firmwares): inner RPM loop that makes the motor's effective output proportional to throttle, linearising the <code>ω → T</code> relationship for the flight controller</li>
+</ul>
+<h3 id="83-motor-dynamics-and-latency-budget">8.3 Motor dynamics and latency budget</h3>
+<p>The electrical time constant of a typical FPV brushless motor is τ_e ≈ 0.1–1 ms. The mechanical time constant depends on the propeller inertia: typically τ_m ≈ 20–80 ms for a 3" racing quad, up to 150 ms for a 5" with heavier props.</p>
+<p>Total latency budget (from gyro sample to motor output):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>IMU read      :   ~0.1 ms
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>Gyro filter   :   ~0.3–2 ms  (depends on LPF cutoff)
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>State estimate:   ~0.1 ms
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>Control loops :   ~0.1 ms
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>DShot frame   :   ~0.05 ms (DShot300 at 8 kHz)
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>ESC processing:   ~0.1 ms
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>Motor step    :   20–80 ms (mechanical τ)
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>──────────────────────────
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>Total (non-mech): ~1–3 ms
+</code></pre></div>
+<p>The mechanical time constant dominates, which is why aerobatic quads use very stiff, light propellers.</p>
+<hr />
+<h2 id="9-failsafe-and-safety-systems">9. Failsafe and Safety Systems</h2>
+<h3 id="91-rc-link-loss">9.1 RC link loss</h3>
+<p>When the FC detects missing RC frames (typically 100–500 ms timeout), it enters <strong>failsafe</strong>:</p>
+<ol>
+<li><strong>Stage 1</strong> (drop): immediately drop throttle to zero (racing/FPV use)</li>
+<li><strong>Stage 2</strong> (return-to-home): execute a programmed RTH sequence (autonomous use)</li>
+</ol>
+<p>Betaflight implements "Drop", "Land", or "GPS Rescue" depending on the vehicle class and GPS availability.</p>
+<h3 id="92-sensor-health-monitoring">9.2 Sensor health monitoring</h3>
+<ul>
+<li><strong>IMU sanity check</strong>: if gyro reads &gt; ±4000 deg/s (physical limit), it flags a hardware fault</li>
+<li><strong>EKF innovation check</strong> (PX4): large innovation (measurement residual vs prediction) in GPS or baro triggers sensor rejection</li>
+<li><strong>Motor desync detection</strong> (BLHeli_32): if the ESC loses commutation timing, it re-arms the motor and reports a fault via DShot telemetry</li>
+<li><strong>Voltage/current monitoring</strong>: Li-Po under-voltage triggers a landing or RTH</li>
+</ul>
+<h3 id="93-arming-logic">9.3 Arming logic</h3>
+<p>Flight controllers require an explicit arming sequence before motors can spin:</p>
+<ol>
+<li><strong>Throttle low</strong> (stick &lt; 1060 µs or normalised &lt; -0.88)</li>
+<li><strong>Arm gesture</strong> (yaw right and hold 0.5 s, or dedicated arm switch)</li>
+<li><strong>Pre-arm checks</strong>: GPS lock, EKF health, motor test, battery level</li>
+</ol>
+<p>This prevents accidental spin-up on the bench.</p>
+<hr />
+<h2 id="10-firmware-comparisons">10. Firmware Comparisons</h2>
+<h3 id="101-betaflight">10.1 Betaflight</h3>
+<p><strong>Target</strong>: FPV racing, freestyle, cinematic
+<strong>Language</strong>: C, heavily optimised for STM32 MCUs (F4/F7/H7)
+<strong>Control rate</strong>: 1–8 kHz rate loop (PID), RPM-linked notch + dynamic notch, bidirectional DShot</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Estimation</td>
+<td>Mahony complementary filter (attitude only)</td>
+</tr>
+<tr>
+<td>Outer loops</td>
+<td>Angle mode only; no onboard position hold without GPS module</td>
+</tr>
+<tr>
+<td>Mixer</td>
+<td>Static X/+ allocation, saturation via clamping</td>
+</tr>
+<tr>
+<td>Feed-forward</td>
+<td>Stick velocity → rate FF term</td>
+</tr>
+<tr>
+<td>INDI</td>
+<td>Not standard; experimental "PIDSUM_LIMIT" variant</td>
+</tr>
+<tr>
+<td>DShot</td>
+<td>DShot150–1200, bidirectional DShot EDT</td>
+</tr>
+<tr>
+<td>Configurator</td>
+<td>Betaflight Configurator (Chromium-based GUI)</td>
+</tr>
+</tbody>
+</table>
+<p>Betaflight is the reference for latency-minimised attitude control. The 8 kHz loop (F7/H7 target) is rarely bottlenecked by computation.</p>
+<h3 id="102-px4">10.2 PX4</h3>
+<p><strong>Target</strong>: Autonomous UAVs, delivery drones, research
+<strong>Language</strong>: C++ on NuttX RTOS (Pixhawk) or Linux (companion computer)
+<strong>Control rate</strong>: 250–500 Hz attitude, 50–100 Hz position</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Estimation</td>
+<td><code>ekf2</code>: full-state EKF (pos, vel, att, biases) fusing IMU + GPS + baro + mag + optflow + VIO</td>
+</tr>
+<tr>
+<td>Outer loops</td>
+<td>Full position/velocity cascade, trajectory planner, auto-takeoff/land, RTH</td>
+</tr>
+<tr>
+<td>Mixer</td>
+<td>Geometric + prioritised allocation via <code>ControlAllocator</code> module</td>
+</tr>
+<tr>
+<td>Rate controller</td>
+<td>PID with anti-windup + feed-forward</td>
+</tr>
+<tr>
+<td>INDI</td>
+<td>Supported as <code>mc_rate_control</code> option (<code>MC_AT_EN</code>)</td>
+</tr>
+<tr>
+<td>DShot</td>
+<td>DShot150–600 via dedicated timer DMA driver</td>
+</tr>
+<tr>
+<td>Configurator</td>
+<td>QGroundControl, MAVLink protocol</td>
+</tr>
+</tbody>
+</table>
+<p>PX4's key strength is its modular uORB publish-subscribe middleware: any module can subscribe to <code>vehicle_local_position</code>, <code>vehicle_attitude</code>, etc. without knowing the sensor source.</p>
+<h3 id="103-crazyflie-firmware">10.3 Crazyflie firmware</h3>
+<p><strong>Target</strong>: Research, indoor swarms, education
+<strong>Language</strong>: C on FreeRTOS (STM32F405)
+<strong>Control rate</strong>: 500 Hz PID (attitude + rate), 100 Hz position</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Estimation</td>
+<td>Mahony (attitude) + EKF (position, using UWB/LPS, optflow, or lighthouse)</td>
+</tr>
+<tr>
+<td>Outer loops</td>
+<td>Full cascade; position setpoints from CRTP over radio</td>
+</tr>
+<tr>
+<td>Mixer</td>
+<td>Direct PWM to motor driver (no DShot); software mixer</td>
+</tr>
+<tr>
+<td>Rate controller</td>
+<td>Cascade PID matching <code>pid_attitude.c</code> (matches this package's <code>CrazyfliePIDController</code>)</td>
+</tr>
+<tr>
+<td>INDI</td>
+<td>Not standard</td>
+</tr>
+<tr>
+<td>Protocols</td>
+<td>CRTP over 2.4 GHz radio (custom), USB, UART</td>
+</tr>
+<tr>
+<td>Configurator</td>
+<td>cfclient Python GUI, <code>cflib</code> Python API</td>
+</tr>
+</tbody>
+</table>
+<p>Crazyflie's defining characteristic is its <strong>radio CRTP protocol</strong> and high-level commander stack, which allows a Python program running on a laptop to stream position setpoints at 100 Hz to a swarm of drones with minimal firmware-side changes.</p>
+<hr />
+<h2 id="11-connecting-to-this-package">11. Connecting to This Package</h2>
+<p>The <code>drone_control</code> package implements the <strong>control cascade</strong> (Sections 6) and <strong>control allocation</strong> (Section 7) layers:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>This package:
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>  PosController_Vectorized   → position + velocity loops (§6.1, §6.2)
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>  CrazyfliePIDController     → full cascade (§6.1–6.4) matching Crazyflie firmware
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>  LeePositionController      → geometric position + attitude control (§6.3 SO(3) variant)
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>  QuadMixer                  → control allocation (§7.1)
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>  betaflight_rate_profile    → RC reference generation (§5.3)
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>  tune_from_physics          → pole-placement gain tuning
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>External (not in package):
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>  Sensor acquisition         → hardware driver / ROS topic
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>  IMU filtering              → e.g., scipy IIR in Python, or hardware firmware
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>  State estimation           → Madgwick/Mahony/EKF (e.g., ahrs, pyekf, IsaacLab)
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>  ESC communication          → DShot via UART or direct hardware
+</code></pre></div>
+<p>A typical simulation loop with this package:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">drone_control</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_config</span><span class="p">,</span> <span class="n">LeePositionController</span><span class="p">,</span> <span class="n">QuadMixer</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">cfg</span>    <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;configs/crazyflie.yaml&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">ctrl</span>   <span class="o">=</span> <span class="n">LeePositionController</span><span class="o">.</span><span class="n">from_drone_config</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">num_envs</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="n">mixer</span>  <span class="o">=</span> <span class="n">QuadMixer</span><span class="o">.</span><span class="n">from_drone_config</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Simulation step (called at ~500 Hz)</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="n">thrust</span><span class="p">,</span> <span class="n">moment</span> <span class="o">=</span> <span class="n">ctrl</span><span class="p">(</span><span class="n">root_state</span><span class="p">,</span> <span class="n">pos_sp</span><span class="p">,</span> <span class="n">vel_sp</span><span class="p">,</span> <span class="n">acc_sp</span><span class="p">,</span> <span class="n">yaw_sp</span><span class="p">,</span> <span class="n">yaw_rate_sp</span><span class="p">)</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="n">omega</span> <span class="o">=</span> <span class="n">mixer</span><span class="p">(</span><span class="n">thrust</span><span class="p">,</span> <span class="n">moment</span><span class="p">)</span>   <span class="c1"># [N, 4] rad/s → send to sim motors</span>
+</code></pre></div>
+<hr />
+<h2 id="12-further-reading">12. Further Reading</h2>
+<ul>
+<li>T. Lee, M. Leok, N. H. McClamroch — <em>Geometric tracking control of a quadrotor UAV on SE(3)</em>, CDC 2010</li>
+<li>F. Kendoul — <em>Survey of advances in guidance, navigation and control of UAVs</em>, JFR 2012</li>
+<li>S. Bouabdallah — <em>Design and control of quadrotors with application to autonomous flying</em>, EPFL 2007</li>
+<li><a href="https://betaflight.com/docs/">Betaflight wiki</a> — rate profiles, RPM filter, DSHOT</li>
+<li><a href="https://docs.px4.io/">PX4 developer guide</a> — EKF2, control allocator, INDI</li>
+<li><a href="https://github.com/bitcraze/crazyflie-firmware">Crazyflie firmware</a> — <code>src/modules/src/controller_pid.c</code>, <code>stabilizer.c</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

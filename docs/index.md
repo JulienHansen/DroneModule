@@ -23,6 +23,10 @@ thrust, moment = ctrl(root_state, target_pos=ref, command_level="position")
 | **4 command levels** | `position`, `velocity`, `attitude`, `body_rate` |
 | **Derivative on measurement** | No derivative kick on setpoint steps |
 | **Full Euler equation** | Gyroscopic term ω × (J·ω) included |
+| **Geometric controller** | Lee SO(3) position + attitude controller |
+| **Control allocation** | Physics-based `QuadMixer` (X and + layouts) |
+| **RC rate profiles** | Betaflight, RaceFlight, Actual, KISS curves |
+| **Pole-placement tuning** | `tune_from_physics` derives gains from bandwidth |
 | **YAML configuration** | Gains, limits and physics from config files |
 | **Partial reset** | Reset only a subset of environments |
 
@@ -32,5 +36,12 @@ thrust, moment = ctrl(root_state, target_pos=ref, command_level="position")
 
 - [Getting Started](getting-started.md) — install and first example
 - [Architecture](architecture.md) — how the cascade loops work
-- [API Reference](api/controller.md) — all parameters and methods
+- [Firmware Architecture](firmware-architecture.md) — sensor-to-motor pipeline explained
+- [API: CrazyfliePIDController](api/controller.md)
+- [API: LeePositionController](api/lee_controller.md)
+- [API: QuadMixer](api/mixer.md)
+- [API: Rate Profiles](api/rate_profiles.md)
+- [API: PID_Vectorized](api/pid.md)
+- [API: Configuration Loader](api/loader.md)
 - [YAML Config Format](config/yaml-format.md) — full config schema
+- [Gain Tuning](tuning.md) — pole-placement guide

@@ -25,7 +25,8 @@ class DroneConfig:
     physics:       DronePhysicsConfig
     attitude:      AttitudeControllerConfig
     position:      PositionControllerConfig
-    crazyflie_pid: dict | None          # raw params dict, or None
+    crazyflie_pid: dict | None              # raw params dict, or None
+    lee:           LeeControllerConfig | None
 ```
 
 ### `DronePhysicsConfig`
@@ -36,6 +37,32 @@ class DroneConfig:
 | `mass` | `float` | Mass [kg] |
 | `inertia.ixx/iyy/izz` | `float` | Principal moments of inertia [kg·m²] |
 | `max_thrust` | `float` | Total maximum thrust (all motors) [N] |
+| `motor` | `MotorConfig \| None` | Motor/frame geometry (required for `QuadMixer`) |
+
+### `MotorConfig`
+
+Populated from the `drone.motor` YAML section. Required by `QuadMixer`.
+
+| Field | Type | Unit | Description |
+|---|---|---|---|
+| `arm_length` | `float` | m | Center-to-motor distance |
+| `k_thrust` | `float` | N·s² | Thrust coefficient: `F = k_thrust · ω²` |
+| `k_drag` | `float` | N·m·s² | Drag coefficient: `τ = k_drag · ω²` |
+| `layout` | `str` | — | `"x"` or `"+"` quad layout |
+| `speed_min` | `float` | rad/s | Minimum motor speed (clamped by mixer) |
+| `speed_max` | `float` | rad/s | Maximum motor speed (clamped by mixer) |
+
+### `LeeControllerConfig`
+
+Populated from the `controllers.lee` YAML section.
+
+| Field | Type | Unit | Description |
+|---|---|---|---|
+| `position_gain` | `list[float]` | N/m | `k_pos` per axis |
+| `velocity_gain` | `list[float]` | N·s/m | `k_vel` per axis |
+| `attitude_gain` | `list[float]` | N·m/rad | `k_R` per axis |
+| `angular_rate_gain` | `list[float]` | N·m·s/rad | `k_Ω` per axis |
+| `max_acceleration` | `float` | m/s² | Clip on desired acceleration norm (default `inf`) |
 
 ### `AttitudeControllerConfig`
 
@@ -79,14 +106,23 @@ cfg = load_config("configs/crazyflie.yaml")
 # Physics
 print(cfg.physics.mass)               # 0.027
 print(cfg.physics.inertia.ixx)        # 1.657e-5
+print(cfg.physics.max_thrust)         # 0.638
+
+# Motor geometry (for QuadMixer)
+print(cfg.physics.motor.arm_length)   # 0.046
+print(cfg.physics.motor.k_thrust)     # 1.285e-8
 
 # Attitude rate gains (roll axis)
 print(cfg.attitude.rate.roll.kp)      # 50.0
 
 # Position gains (z axis)
-print(cfg.position.position.z.kp)    # 5.0
-print(cfg.position.position.z.ki)    # 0.0
+print(cfg.position.position.z.kp)     # 5.0
+print(cfg.position.position.z.ki)     # 0.0
 
 # Raw CrazyfliePID params (dict)
 print(cfg.crazyflie_pid["rate_kp"])   # [250.0, 250.0, 120.0]
+
+# Lee geometric controller gains
+print(cfg.lee.position_gain)          # [0.5, 0.5, 0.7]
+print(cfg.lee.attitude_gain)          # [0.06, 0.06, 0.03]
 ```

@@ -121,6 +121,68 @@ ctrl.set_rate_gains(
 
 ---
 
+---
+
+## Motor speeds with QuadMixer
+
+After getting `thrust` and `moment` from any controller, convert them to
+per-motor speeds with `QuadMixer`:
+
+```python
+from drone_control import QuadMixer
+
+mixer = QuadMixer.from_drone_config(cfg)   # requires drone.motor in YAML
+
+omega = mixer(thrust, moment)   # [N, 4]  rad/s
+# omega[:, 0] → M0 front-left (CCW)
+# omega[:, 1] → M1 front-right (CW)
+# omega[:, 2] → M2 back-right (CCW)
+# omega[:, 3] → M3 back-left (CW)
+```
+
+---
+
+## Lee geometric controller
+
+For singularity-free trajectory tracking use `LeePositionController`:
+
+```python
+from drone_control import LeePositionController
+
+lee = LeePositionController.from_drone_config(cfg, num_envs=4)
+
+thrust, moment = lee(
+    root_state,
+    target_pos=torch.tensor([[0., 0., 1.]]).repeat(4, 1),
+)
+```
+
+The Lee controller is **stateless** — no `reset()` needed between episodes.
+
+---
+
+## RC rate profiles (Acro mode)
+
+Convert a normalised stick input [-1, 1] to a body-rate setpoint [rad/s]:
+
+```python
+from drone_control import betaflight_rate_profile
+
+stick    = torch.zeros(4, 3)
+stick[:, 0] = 0.5             # 50 % roll stick
+
+omega_sp = betaflight_rate_profile(stick)   # [4, 3] rad/s
+
+thrust, moment = ctrl(
+    root_state,
+    target_body_rates=omega_sp,
+    thrust_cmd=torch.full((4, 1), 0.3),   # normalised throttle [N]
+    command_level="body_rate",
+)
+```
+
+---
+
 ## Provided configurations
 
 | File | Drone | Mass | Max thrust |

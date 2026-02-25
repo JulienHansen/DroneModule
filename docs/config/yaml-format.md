@@ -1,7 +1,15 @@
 # YAML Config Format
 
-A config file has three top-level sections: `drone`, `controllers.attitude`,
-`controllers.position`, and an optional `controllers.crazyflie_pid`.
+A config file has these sections:
+
+| Section | Required | Used by |
+|---|---|---|
+| `drone` | Yes | All controllers |
+| `drone.motor` | No | `QuadMixer` |
+| `controllers.attitude` | Yes | `AttitudeControllerConfig` |
+| `controllers.position` | Yes | `PositionControllerConfig` |
+| `controllers.crazyflie_pid` | No | `CrazyfliePIDController` |
+| `controllers.lee` | No | `LeePositionController` |
 
 ---
 
@@ -17,6 +25,26 @@ drone:
     izz: 2.900e-5
   max_thrust: 0.638      # total thrust of all motors [N]
 ```
+
+---
+
+## `drone.motor` — motor and frame geometry
+
+Required by `QuadMixer`. If absent, `cfg.physics.motor` is `None`.
+
+```yaml
+drone:
+  motor:
+    arm_length: 0.046      # m    — center-to-motor distance
+    k_thrust:   1.285e-8   # N·s² — F = k_thrust · ω²
+    k_drag:     7.645e-11  # N·m·s² — τ = k_drag · ω²
+    layout:     x          # 'x' (default) or '+'
+    speed_min:  0.0        # rad/s
+    speed_max:  2618.0     # rad/s  (~25 000 RPM)
+```
+
+`k_thrust` and `k_drag` are identified experimentally on a thrust stand.
+For the Crazyflie 2.1 these values come from Förster (2015).
 
 ---
 
@@ -106,10 +134,29 @@ Values match `platform_defaults_cf2.h` from the Crazyflie open-source firmware.
 
 ---
 
+## `controllers.lee` — LeePositionController gains
+
+Optional. If absent, `cfg.lee` is `None`.
+
+```yaml
+controllers:
+  lee:
+    position_gain:     [0.50, 0.50, 0.70]    # k_pos  [N/m]
+    velocity_gain:     [0.20, 0.20, 0.30]    # k_vel  [N·s/m]
+    attitude_gain:     [0.06, 0.06, 0.030]   # k_R    [N·m/rad]
+    angular_rate_gain: [0.002, 0.002, 0.001] # k_Ω    [N·m·s/rad]
+    # max_acceleration: inf                  # optional [m/s²]
+```
+
+Gains are in SI units. Values above are tuned for the Crazyflie 2.1 via
+pole placement at ω_pos ≈ 4 rad/s, ω_att ≈ 60 rad/s, ζ = 0.7.
+
+---
+
 ## `controllers.attitude` — AttitudeControllerConfig
 
-Used only when constructing `AttController_Vectorized` directly (not needed
-for `CrazyfliePIDController`).
+Used to populate `cfg.attitude` (available to all controllers via
+`DroneConfig`).
 
 ```yaml
 controllers:
@@ -157,11 +204,14 @@ Units: rate loop [rad/s²], angle loop [rad/s].
    ```bash
    cp configs/crazyflie.yaml configs/my_drone.yaml
    ```
-2. Update the `drone` section with your drone's physical parameters.
-3. Tune the `crazyflie_pid` gains (see the
-   [tuning guide](../architecture.md) for guidance).
-4. Load it:
+2. Update the `drone` section (mass, inertia, max_thrust).
+3. Update `drone.motor` if you plan to use `QuadMixer` (measure `k_thrust`
+   and `k_drag` on a thrust stand, or use manufacturer data).
+4. Tune the `crazyflie_pid` gains using `tune_from_physics`
+   (see the [tuning guide](../tuning.md)) or manually.
+5. Load it:
    ```python
-   cfg  = load_config("configs/my_drone.yaml")
-   ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=N, dt=dt)
+   cfg   = load_config("configs/my_drone.yaml")
+   ctrl  = CrazyfliePIDController.from_drone_config(cfg, num_envs=N, dt=dt)
+   mixer = QuadMixer.from_drone_config(cfg)
    ```

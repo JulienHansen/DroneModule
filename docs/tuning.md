@@ -210,7 +210,9 @@ Or pass all gains at construction time:
 ctrl = CrazyfliePIDController(
     num_envs=1, dt=0.002,
     mass=cfg.physics.mass,
-    max_thrust=cfg.physics.max_thrust,
+    inertia=[cfg.physics.inertia.ixx,
+             cfg.physics.inertia.iyy,
+             cfg.physics.inertia.izz],
     params=result.to_params(),
 )
 ```
