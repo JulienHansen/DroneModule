@@ -6,6 +6,7 @@ __pycache__/
 *$py.class
 *.pyo
 *.pyd
+*.cpython-312.pyc
 
 # Distribution / packaging
 dist/

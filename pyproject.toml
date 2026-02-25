@@ -18,6 +18,9 @@ test = [
     "pytest>=7.0",
     "matplotlib>=3.7",
 ]
+docs = [
+    "mkdocs-material>=9.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
