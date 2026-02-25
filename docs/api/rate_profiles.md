@@ -5,7 +5,7 @@ body-rate setpoint.  Matches the firmware conventions of Betaflight,
 RaceFlight, Actual-rates, and KISS.
 
 ```python
-from drone_control import betaflight_rate_profile
+from drone import betaflight_rate_profile
 
 omega_sp = betaflight_rate_profile(stick)   # [N, 3] rad/s
 ```
@@ -119,7 +119,7 @@ omega = kiss_rate_profile(
 
 ```python
 import torch
-from drone_control import betaflight_rate_profile
+from drone import betaflight_rate_profile
 
 N = 4
 stick = torch.zeros(N, 3)
@@ -159,7 +159,7 @@ Rate profile output feeds directly into the innermost loop of any
 controller that accepts `body_rate` commands:
 
 ```python
-from drone_control import CrazyfliePIDController, betaflight_rate_profile
+from drone import CrazyfliePIDController, betaflight_rate_profile
 
 stick     = rc_input[..., :3]              # [N, 3]  normalised
 omega_sp  = betaflight_rate_profile(stick) # [N, 3]  rad/s

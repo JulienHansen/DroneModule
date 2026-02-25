@@ -4,7 +4,7 @@ Geometric position + attitude controller based on Lee et al., CDC 2010.
 Operates directly on SO(3) — no Euler-angle singularities.
 
 ```python
-from drone_control import load_config, LeePositionController
+from drone import load_config, LeePositionController
 
 cfg  = load_config("configs/crazyflie.yaml")
 ctrl = LeePositionController.from_drone_config(cfg, num_envs=4, device="cpu")
@@ -146,7 +146,7 @@ provided for API compatibility with `CrazyfliePIDController`.
 ## Example with `QuadMixer`
 
 ```python
-from drone_control import load_config, LeePositionController, QuadMixer
+from drone import load_config, LeePositionController, QuadMixer
 import torch
 
 cfg   = load_config("configs/crazyflie.yaml")

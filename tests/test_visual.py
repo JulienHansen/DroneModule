@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 import pytest
 import torch
 
-from drone_control import load_config, CrazyfliePIDController
+from drone import load_config, CrazyfliePIDController
 
 PLOTS_DIR = Path(__file__).parent / "plots"
 DT   = 0.002

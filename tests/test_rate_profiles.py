@@ -19,7 +19,7 @@ import math
 import pytest
 import torch
 
-from drone_control import (
+from drone import (
     betaflight_rate_profile,
     raceflight_rate_profile,
     actual_rate_profile,

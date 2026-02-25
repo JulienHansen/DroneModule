@@ -4,7 +4,7 @@ Discrete-time PID controller, vectorized over N environments and
 optionally over multiple axes simultaneously.
 
 ```python
-from drone_control import PID_Vectorized
+from drone import PID_Vectorized
 ```
 
 ---

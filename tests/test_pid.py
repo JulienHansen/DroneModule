@@ -9,7 +9,7 @@ and reset mechanics.
 import pytest
 import torch
 
-from drone_control.controllers.pid import PID_Vectorized
+from drone.controllers.pid import PID_Vectorized
 
 N      = 3
 DEVICE = torch.device("cpu")

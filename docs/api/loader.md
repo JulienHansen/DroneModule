@@ -1,7 +1,7 @@
 # Configuration Loader
 
 ```python
-from drone_control import load_config, DroneConfig
+from drone import load_config, DroneConfig
 ```
 
 ---

@@ -474,7 +474,7 @@ Crazyflie's defining characteristic is its **radio CRTP protocol** and high-leve
 
 ## 11. Connecting to This Package
 
-The `drone_control` package implements the **control cascade** (Sections 6) and **control allocation** (Section 7) layers:
+The `drone` package implements the **control cascade** (Sections 6) and **control allocation** (Section 7) layers:
 
 ```
 This package:
@@ -495,7 +495,7 @@ External (not in package):
 A typical simulation loop with this package:
 
 ```python
-from drone_control import load_config, LeePositionController, QuadMixer
+from drone import load_config, LeePositionController, QuadMixer
 
 cfg    = load_config("configs/crazyflie.yaml")
 ctrl   = LeePositionController.from_drone_config(cfg, num_envs=N, device="cuda")

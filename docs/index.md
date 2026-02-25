@@ -4,7 +4,7 @@
 simulation of N environments simultaneously using PyTorch.
 
 ```python
-from drone_control import load_config, CrazyfliePIDController
+from drone import load_config, CrazyfliePIDController
 
 cfg  = load_config("configs/crazyflie.yaml")
 ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
@@ -27,6 +27,9 @@ thrust, moment = ctrl(root_state, target_pos=ref, command_level="position")
 | **Control allocation** | Physics-based `QuadMixer` (X and + layouts) |
 | **RC rate profiles** | Betaflight, RaceFlight, Actual, KISS curves |
 | **Pole-placement tuning** | `tune_from_physics` derives gains from bandwidth |
+| **Digital twin** | `Drone` — rigid-body integrator with modular forces |
+| **Modular forces** | `Gravity`, `BodyDrag`, custom `ForceModel` subclasses |
+| **Modular integrators** | `EulerIntegrator` (default), `RK4Integrator` |
 | **YAML configuration** | Gains, limits and physics from config files |
 | **Partial reset** | Reset only a subset of environments |
 
@@ -45,3 +48,4 @@ thrust, moment = ctrl(root_state, target_pos=ref, command_level="position")
 - [API: Configuration Loader](api/loader.md)
 - [YAML Config Format](config/yaml-format.md) — full config schema
 - [Gain Tuning](tuning.md) — pole-placement guide
+- [Examples: IsaacLab Integration](examples/isaaclab.md) — all 5 command levels

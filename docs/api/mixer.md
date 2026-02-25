@@ -3,7 +3,7 @@
 Maps a collective thrust + body moments wrench to per-motor angular speeds.
 
 ```python
-from drone_control import load_config, QuadMixer
+from drone import load_config, QuadMixer
 
 cfg   = load_config("configs/crazyflie.yaml")
 mixer = QuadMixer.from_drone_config(cfg, device="cpu")
@@ -154,7 +154,7 @@ See [YAML Config Format](../config/yaml-format.md) for the full schema.
 ## Full pipeline example
 
 ```python
-from drone_control import (
+from drone import (
     load_config, CrazyfliePIDController, QuadMixer
 )
 import torch

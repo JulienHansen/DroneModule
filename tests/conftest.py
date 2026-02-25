@@ -1,5 +1,5 @@
 """
-Shared fixtures for the drone_control test suite.
+Shared fixtures for the drone test suite.
 
 All path resolution is relative to the repository root so tests can be
 invoked from any working directory (repo root, tests/, etc.).
@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from drone_control import load_config
+from drone import load_config
 
 # Absolute path to the repo root, independent of cwd
 REPO_ROOT = Path(__file__).parent.parent

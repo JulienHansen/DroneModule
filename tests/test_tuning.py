@@ -1,10 +1,10 @@
 """
-Tests for drone_control.tuning.tune_from_physics.
+Tests for drone.tuning.tune_from_physics.
 """
 
 import math
 import pytest
-from drone_control.tuning import tune_from_physics, TuningResult
+from drone.tuning import tune_from_physics, TuningResult
 
 DEG2RAD = math.pi / 180.0
 G = 9.81
@@ -301,7 +301,7 @@ class TestWarnings:
 class TestToParamsIntegration:
     def test_params_accepted_by_controller(self):
         """to_params() output must be accepted without error by the controller."""
-        from drone_control import load_config, CrazyfliePIDController
+        from drone import load_config, CrazyfliePIDController
         import os
 
         cfg_path = os.path.join(

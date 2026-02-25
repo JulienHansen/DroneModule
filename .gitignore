@@ -58,6 +58,9 @@ ENV/
 # Generated files
 # ============================================================
 
+# MkDocs build output (deployed via GitHub Actions, never committed)
+site/
+
 # Visual test plots (regenerated on every test run)
 tests/plots/
 

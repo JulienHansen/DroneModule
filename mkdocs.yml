@@ -45,11 +45,16 @@ nav:
   - Architecture: architecture.md
   - Firmware Architecture: firmware-architecture.md
   - API Reference:
+      - Drone (Digital Twin): api/drone.md
       - CrazyfliePIDController: api/controller.md
       - LeePositionController: api/lee_controller.md
       - QuadMixer: api/mixer.md
       - Rate Profiles: api/rate_profiles.md
+      - Forces: api/forces.md
+      - Integrators: api/integrators.md
       - PID_Vectorized: api/pid.md
       - Configuration Loader: api/loader.md
   - YAML Config Format: config/yaml-format.md
   - Gain Tuning: tuning.md
+  - Examples:
+      - IsaacLab Integration: examples/isaaclab.md

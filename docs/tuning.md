@@ -1,7 +1,7 @@
 # Gain Tuning via Pole Placement
 
 ```python
-from drone_control import tune_from_physics, TuningResult
+from drone import tune_from_physics, TuningResult
 ```
 
 ---
@@ -147,8 +147,8 @@ Prints a human-readable table of all gains, bandwidths, and any warnings.
 ## Example
 
 ```python
-from drone_control import load_config, CrazyfliePIDController
-from drone_control import tune_from_physics
+from drone import load_config, CrazyfliePIDController
+from drone import tune_from_physics
 
 cfg = load_config("configs/crazyflie.yaml")
 

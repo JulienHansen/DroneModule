@@ -22,7 +22,7 @@ import os
 import pytest
 import torch
 
-from drone_control import load_config, LeePositionController
+from drone import load_config, LeePositionController
 
 N   = 4
 G   = 9.81

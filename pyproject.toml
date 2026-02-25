@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "drone-control"
+name = "drone"
 version = "0.1.0"
 description = "Modular drone controller library with YAML configuration support"
 readme = "README.md"
@@ -24,7 +24,7 @@ docs = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["drone_control*"]
+include = ["drone", "drone.*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

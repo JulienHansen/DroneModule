@@ -3,7 +3,7 @@
 Cascaded PID controller modelled after the Crazyflie 2.x firmware.
 
 ```python
-from drone_control import load_config, CrazyfliePIDController
+from drone import load_config, CrazyfliePIDController
 
 cfg  = load_config("configs/crazyflie.yaml")
 ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)

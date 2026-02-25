@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from drone_control.config.loader import (
+from drone.config.loader import (
     load_config,
     DroneConfig,
     DronePhysicsConfig,

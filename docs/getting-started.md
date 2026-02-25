@@ -24,7 +24,7 @@ mkdocs serve
 ### 1 — Load a config
 
 ```python
-from drone_control import load_config
+from drone import load_config
 
 cfg = load_config("configs/crazyflie.yaml")
 
@@ -35,7 +35,7 @@ print(cfg.physics.max_thrust)    # 0.638 N
 ### 2 — Create the controller
 
 ```python
-from drone_control import CrazyfliePIDController
+from drone import CrazyfliePIDController
 
 ctrl = CrazyfliePIDController.from_drone_config(
     cfg,
@@ -129,7 +129,7 @@ After getting `thrust` and `moment` from any controller, convert them to
 per-motor speeds with `QuadMixer`:
 
 ```python
-from drone_control import QuadMixer
+from drone import QuadMixer
 
 mixer = QuadMixer.from_drone_config(cfg)   # requires drone.motor in YAML
 
@@ -147,7 +147,7 @@ omega = mixer(thrust, moment)   # [N, 4]  rad/s
 For singularity-free trajectory tracking use `LeePositionController`:
 
 ```python
-from drone_control import LeePositionController
+from drone import LeePositionController
 
 lee = LeePositionController.from_drone_config(cfg, num_envs=4)
 
@@ -166,7 +166,7 @@ The Lee controller is **stateless** — no `reset()` needed between episodes.
 Convert a normalised stick input [-1, 1] to a body-rate setpoint [rad/s]:
 
 ```python
-from drone_control import betaflight_rate_profile
+from drone import betaflight_rate_profile
 
 stick    = torch.zeros(4, 3)
 stick[:, 0] = 0.5             # 50 % roll stick

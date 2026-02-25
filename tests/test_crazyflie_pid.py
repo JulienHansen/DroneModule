@@ -18,7 +18,7 @@ import math
 import pytest
 import torch
 
-from drone_control import load_config, CrazyfliePIDController
+from drone import load_config, CrazyfliePIDController
 
 N  = 4
 DT = 0.002          # 500 Hz simulation
