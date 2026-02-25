@@ -1,4 +1,7 @@
 from .pid import PID_Vectorized
-from .cascade import AttController_Vectorized, PosController_Vectorized
+from .crazyflie_pid import CrazyfliePIDController
 
-__all__ = ["PID_Vectorized", "AttController_Vectorized", "PosController_Vectorized"]
+__all__ = [
+    "PID_Vectorized",
+    "CrazyfliePIDController",
+]

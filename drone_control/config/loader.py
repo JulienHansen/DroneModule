@@ -8,8 +8,9 @@ Limits on PID outputs are assumed symmetric (±limit).
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
@@ -115,6 +116,9 @@ class DroneConfig:
     physics:  DronePhysicsConfig
     attitude: AttitudeControllerConfig
     position: PositionControllerConfig
+    # Raw params dict for CrazyfliePIDController.
+    # Present only when the YAML contains a ``controllers.crazyflie_pid`` section.
+    crazyflie_pid: Optional[dict] = field(default=None)
 
 
 # ---------------------------------------------------------------------------
@@ -192,4 +196,12 @@ def load_config(path: str | Path) -> DroneConfig:
         ),
     )
 
-    return DroneConfig(physics=physics, attitude=attitude, position=position)
+    # Optional CrazyfliePIDController params (passed as-is to the controller)
+    crazyflie_pid = raw.get("controllers", {}).get("crazyflie_pid", None)
+
+    return DroneConfig(
+        physics=physics,
+        attitude=attitude,
+        position=position,
+        crazyflie_pid=crazyflie_pid,
+    )
