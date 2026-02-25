@@ -179,7 +179,7 @@ rate_sp = non_linear_curve(stick, rc_rate, expo, super_expo, limit)
          converts normalised stick [-1,1] → body rate [rad/s]
 ```
 
-A high `rc_rate` gives fast, nervous response. Adding `super_expo` provides a deadband near centre while still reaching the same maximum rate at full stick. See [API Reference](../api/controller.md) for details.
+A high `rc_rate` gives fast, nervous response. Adding `super_expo` provides a deadband near centre while still reaching the same maximum rate at full stick. See [API Reference](api/controller.md) for details.
 
 ### 5.4 Trajectory planning (autonomous mode)
 
