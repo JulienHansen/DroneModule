@@ -25,6 +25,15 @@ drone:
     izz: 2.900e-5
   max_thrust: 0.638      # N  (4 × ~160 mN brushless motors, measured)
 
+  # Motor & frame geometry  (needed by QuadMixer)
+  motor:
+    arm_length: 0.046      # m   — center-to-motor distance
+    k_thrust:   1.285e-8   # N·s²  — F = k_thrust · ω²  (sysid: Förster 2015)
+    k_drag:     7.645e-11  # N·m·s² — τ = k_drag · ω²
+    layout:     x          # 'x' — standard X-quad configuration
+    speed_min:  0.0        # rad/s
+    speed_max:  2618.0     # rad/s  (~25 000 RPM)
+
 controllers:
 
   # ----------------------------------------------------------

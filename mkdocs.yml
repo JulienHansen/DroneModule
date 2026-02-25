@@ -43,6 +43,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Architecture: architecture.md
+  - Firmware Architecture: firmware-architecture.md
   - API Reference:
       - CrazyfliePIDController: api/controller.md
       - PID_Vectorized: api/pid.md

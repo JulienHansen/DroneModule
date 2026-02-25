@@ -100,11 +100,23 @@ class InertiaConfig:
 
 
 @dataclass
+class MotorConfig:
+    """Motor and frame geometry for the QuadMixer."""
+    arm_length: float   # m    — center-to-motor distance
+    k_thrust:   float   # N·s²  — thrust coeff  (F = k_thrust · ω²)
+    k_drag:     float   # N·m·s² — drag coeff   (τ = k_drag   · ω²)
+    layout:     str     # 'x' or '+' quad configuration
+    speed_min:  float   # rad/s — minimum motor speed (clamped)
+    speed_max:  float   # rad/s — maximum motor speed (clamped)
+
+
+@dataclass
 class DronePhysicsConfig:
     name: str
     mass: float         # [kg]
     inertia: InertiaConfig
     max_thrust: float   # Total maximum thrust (all motors combined) [N]
+    motor: Optional[MotorConfig] = field(default=None)
 
 
 # ---------------------------------------------------------------------------
@@ -166,6 +178,17 @@ def load_config(path: str | Path) -> DroneConfig:
 
     # --- Physics ---
     d = raw["drone"]
+    motor_raw = d.get("motor", None)
+    motor: Optional[MotorConfig] = None
+    if motor_raw is not None:
+        motor = MotorConfig(
+            arm_length=float(motor_raw["arm_length"]),
+            k_thrust=float(motor_raw["k_thrust"]),
+            k_drag=float(motor_raw["k_drag"]),
+            layout=str(motor_raw.get("layout", "x")),
+            speed_min=float(motor_raw.get("speed_min", 0.0)),
+            speed_max=float(motor_raw.get("speed_max", float("inf"))),
+        )
     physics = DronePhysicsConfig(
         name=str(d["name"]),
         mass=float(d["mass"]),
@@ -175,6 +198,7 @@ def load_config(path: str | Path) -> DroneConfig:
             izz=float(d["inertia"]["izz"]),
         ),
         max_thrust=float(d["max_thrust"]),
+        motor=motor,
     )
 
     # --- Attitude controller ---
