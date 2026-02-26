@@ -18,7 +18,7 @@ Quaternion convention: **[w, x, y, z]** (scalar first).
 
 The controller is **stateless** (no integrators). ``reset()`` is a no-op.
 Outputs are ``(thrust [N, 1], moment [N, 3])`` in SI units, matching the
-interface of ``CrazyfliePIDController``.
+interface of ``CascadePIDController``.
 """
 
 from __future__ import annotations

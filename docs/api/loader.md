@@ -25,7 +25,7 @@ class DroneConfig:
     physics:       DronePhysicsConfig
     attitude:      AttitudeControllerConfig
     position:      PositionControllerConfig
-    crazyflie_pid: dict | None              # raw params dict, or None
+    cascade_pid: dict | None              # raw params dict, or None
     lee:           LeeControllerConfig | None
 ```
 
@@ -119,8 +119,8 @@ print(cfg.attitude.rate.roll.kp)      # 50.0
 print(cfg.position.position.z.kp)     # 5.0
 print(cfg.position.position.z.ki)     # 0.0
 
-# Raw CrazyfliePID params (dict)
-print(cfg.crazyflie_pid["rate_kp"])   # [250.0, 250.0, 120.0]
+# Raw CascadePID params (dict)
+print(cfg.cascade_pid["rate_kp"])   # [250.0, 250.0, 120.0]
 
 # Lee geometric controller gains
 print(cfg.lee.position_gain)          # [0.5, 0.5, 0.7]

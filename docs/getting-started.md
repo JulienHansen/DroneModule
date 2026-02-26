@@ -35,9 +35,9 @@ print(cfg.physics.max_thrust)    # 0.638 N
 ### 2 — Create the controller
 
 ```python
-from drone import CrazyfliePIDController
+from drone import CascadePIDController
 
-ctrl = CrazyfliePIDController.from_drone_config(
+ctrl = CascadePIDController.from_drone_config(
     cfg,
     num_envs=4,    # parallel environments
     dt=0.002,      # simulation timestep [s]  (= 500 Hz)

@@ -92,7 +92,7 @@ class Drone:
         Loaded drone configuration.
     controller : callable
         Any object with ``__call__(state, **kwargs) -> (thrust [N,1], moment [N,3])``.
-        Compatible with :class:`~drone.controllers.CrazyfliePIDController` and
+        Compatible with :class:`~drone.controllers.CascadePIDController` and
         :class:`~drone.controllers.LeePositionController`.
     forces : list[ForceModel] or None
         External force/torque models.  Defaults to ``[Gravity(mass)]`` if
@@ -218,7 +218,7 @@ class Drone:
 
         Example
         -------
-        >>> # CrazyfliePIDController
+        >>> # CascadePIDController
         >>> state = drone.step(state, dt=0.002,
         ...                    target_pos=sp, command_level="position")
         >>>

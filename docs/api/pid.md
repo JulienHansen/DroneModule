@@ -52,7 +52,7 @@ out = pid(error, Ts=0.002)   # error: [4]  → out: [4]
 ### Multi-axis mode (lazy init)
 
 One instance handles all 3 axes. State shape: `[N, 3]`.
-Used by `CrazyfliePIDController`.
+Used by `CascadePIDController`.
 
 ```python
 pid = PID_Vectorized(kp=[6., 6., 6.], ki=[3., 3., 1.], kd=0.,

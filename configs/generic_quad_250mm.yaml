@@ -62,3 +62,62 @@ controllers:
       x: { kp: 4.0, ki: 0.0, kd: 0.8, tau: 0.10, limit: 8.0 }
       y: { kp: 4.0, ki: 0.0, kd: 0.8, tau: 0.10, limit: 8.0 }
       z: { kp: 4.0, ki: 0.2, kd: 2.0, tau: 0.10, limit: 5.0 }
+
+  # ----------------------------------------------------------
+  # CascadePIDController  (firmware-style multi-rate cascade)
+  # ----------------------------------------------------------
+  # Gains scaled for a 250 g / 250 mm 5-inch quad.
+  # Compared to the Crazyflie: ~10× heavier, ~100× higher inertia,
+  # higher thrust margin → lower rate kp (same angular acceleration),
+  # more aggressive position control possible.
+  #
+  # Unit conventions: same as crazyflie.yaml cascade_pid section.
+  # ----------------------------------------------------------
+  cascade_pid:
+    sim_rate_hz:            500.0
+    pid_posvel_loop_rate_hz: 100.0
+    pid_loop_rate_hz:        500.0
+
+    # ── Position loop  (error [m] → velocity setpoint [m/s]) ──────────────
+    pos_kp:  [3.0,  3.0,  3.0]
+    pos_ki:  [0.0,  0.0,  0.5]
+    pos_kd:  [0.0,  0.0,  0.0]
+    pos_kff: [0.0,  0.0,  0.0]
+
+    # ── Velocity loop  (error [m/s] → roll/pitch cmd [deg] or thrust Δ) ──
+    vel_kp:  [20.0, 20.0, 20.0]
+    vel_ki:  [ 2.0,  2.0, 10.0]
+    vel_kd:  [ 0.0,  0.0,  0.0]
+    vel_kff: [ 0.0,  0.0,  0.0]
+
+    # ── Attitude loop  (error [rad] → body-rate setpoint [rad/s]) ─────────
+    att_kp:  [8.0, 8.0, 6.0]
+    att_ki:  [2.0, 2.0, 1.0]
+    att_kd:  [0.0, 0.0, 0.2]
+    att_kff: [0.0, 0.0, 0.0]
+
+    # ── Rate loop  (error [rad/s] → angular acceleration [rad/s²]) ────────
+    # Lower kp than Crazyflie: inertia is ~100× higher, so same angular
+    # acceleration requires proportionally lower gains.
+    rate_kp:  [2.5, 2.5, 1.2]
+    rate_ki:  [5.0, 5.0, 0.5]
+    rate_kd:  [0.05, 0.05, 0.0]
+    rate_kff: [0.0,  0.0,  0.0]
+
+    # ── Gyroscope low-pass filter ──────────────────────────────────────────
+    gyro_lpf_cutoff_hz: 80.0
+
+    # ── Saturation limits ──────────────────────────────────────────────────
+    att_integral_limit_deg:  [20.0, 20.0, 360.0]
+    rate_integral_limit_deg: [50.0, 50.0, 200.0]
+    pos_vel_max: [3.0, 3.0, 2.0]    # more headroom than Crazyflie
+    roll_max_deg:  35.0
+    pitch_max_deg: 35.0
+    yaw_max_delta: 0.0
+
+    # ── Thrust  (Crazyflie PWM units reused as convention: 0 – 65 535) ────
+    # thrust_cmd_scale is derived automatically from drone.max_thrust.
+    thrust_base:    32767.0   # Hover throttle estimate [PWM]
+    thrust_min:     10000.0   # Minimum throttle [PWM]
+    thrust_cmd_max: 65535.0
+    vel_thrust_scale: 1000.0

@@ -126,13 +126,13 @@ ctrl.reset(env_ids=None)
 ```
 
 The Lee controller is **stateless** (no integrators). `reset()` is a no-op
-provided for API compatibility with `CrazyfliePIDController`.
+provided for API compatibility with `CascadePIDController`.
 
 ---
 
-## Stateless vs CrazyfliePIDController
+## Stateless vs CascadePIDController
 
-| Property | `LeePositionController` | `CrazyfliePIDController` |
+| Property | `LeePositionController` | `CascadePIDController` |
 |---|---|---|
 | Integrators | None | 4 × PID integral states |
 | Attitude representation | SO(3) quaternion | Euler RPY |

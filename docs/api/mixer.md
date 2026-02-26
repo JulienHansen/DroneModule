@@ -155,12 +155,12 @@ See [YAML Config Format](../config/yaml-format.md) for the full schema.
 
 ```python
 from drone import (
-    load_config, CrazyfliePIDController, QuadMixer
+    load_config, CascadePIDController, QuadMixer
 )
 import torch
 
 cfg   = load_config("configs/crazyflie.yaml")
-ctrl  = CrazyfliePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
+ctrl  = CascadePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
 mixer = QuadMixer.from_drone_config(cfg)
 
 # Single control step

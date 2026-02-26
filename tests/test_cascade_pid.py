@@ -1,5 +1,5 @@
 """
-Tests for CrazyfliePIDController.
+Tests for CascadePIDController.
 
 Covers:
 - Instantiation (direct and from_drone_config)
@@ -18,7 +18,7 @@ import math
 import pytest
 import torch
 
-from drone import load_config, CrazyfliePIDController
+from drone import load_config, CascadePIDController
 
 N  = 4
 DT = 0.002          # 500 Hz simulation
@@ -46,11 +46,11 @@ def make_root_state(
     return root
 
 
-def make_ctrl(cf_config=None, params: dict | None = None) -> CrazyfliePIDController:
+def make_ctrl(cf_config=None, params: dict | None = None) -> CascadePIDController:
     p = params or {}
     if cf_config is not None:
-        return CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
-    return CrazyfliePIDController(dt=DT, num_envs=N, device="cpu", params=p)
+        return CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+    return CascadePIDController(dt=DT, num_envs=N, device="cpu", params=p)
 
 
 # ---------------------------------------------------------------------------
@@ -59,32 +59,32 @@ def make_ctrl(cf_config=None, params: dict | None = None) -> CrazyfliePIDControl
 
 class TestInstantiation:
     def test_direct_default_params(self):
-        ctrl = CrazyfliePIDController(dt=DT, num_envs=N, device="cpu")
+        ctrl = CascadePIDController(dt=DT, num_envs=N, device="cpu")
         assert ctrl.dt == pytest.approx(DT)
         assert ctrl._num_envs == N
 
     def test_from_drone_config(self, cf_config):
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
         assert ctrl.mass.item() == pytest.approx(cf_config.physics.mass)
         # inertia tensor should be set
         assert ctrl._inertia_tensor is not None
         assert ctrl._inertia_tensor.shape == (N, 3, 3)
 
     def test_thrust_cmd_scale_derived_from_max_thrust(self, cf_config):
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
         expected = cf_config.physics.max_thrust / 65_535.0
         assert ctrl.thrust_cmd_scale == pytest.approx(expected, rel=1e-4)
 
     def test_yaml_params_loaded(self, cf_config):
-        """YAML crazyflie_pid section should override default gains."""
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        """YAML cascade_pid section should override default gains."""
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
         # rate kp from YAML = [250, 250, 120]  (matches CF2 firmware platform_defaults_cf2.h)
         assert ctrl.rate_kp[0].item() == pytest.approx(250.0)
         assert ctrl.rate_kp[2].item() == pytest.approx(120.0)
 
     def test_decimation_set_correctly(self, cf_config):
         """At 500 Hz sim / 100 Hz posvel → decimation = 5."""
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
         # sim_rate = 1/0.002 = 500, posvel = 100 → decimation = 5
         assert ctrl.posvel_decimation == 5
         # att = 500 → decimation = 1
@@ -159,7 +159,7 @@ class TestDecimation:
         We use a small z-error (0.1 m) with ki_z = 0.5 so that each time the
         pos loop fires its integrator grows, making vel_sp_z measurably different.
         """
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
         assert ctrl.posvel_decimation == 5
         assert ctrl.pos_pid.ki[2].item() == pytest.approx(0.5), \
             "ki_z must be non-zero for this test to be meaningful"
@@ -196,7 +196,7 @@ class TestDecimation:
 class TestYawSetpoint:
     @pytest.fixture(autouse=True)
     def ctrl(self, cf_config):
-        self.ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        self.ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
 
     def test_absolute_yaw_target(self):
         rs = make_root_state(N, yaw=0.0)
@@ -225,7 +225,7 @@ class TestYawSetpoint:
             f"Yaw not wrapped: {yaw}"
 
     def test_yaw_max_delta_clamps_setpoint(self):
-        ctrl = CrazyfliePIDController(
+        ctrl = CascadePIDController(
             dt=DT, num_envs=N, device="cpu",
             params={"yaw_max_delta": 0.1},          # 0.1 rad max delta
         )
@@ -243,7 +243,7 @@ class TestYawSetpoint:
 class TestReset:
     @pytest.fixture(autouse=True)
     def ctrl(self, cf_config):
-        self.ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        self.ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
 
     def _warm_up(self, steps=10):
         rs  = make_root_state(N)
@@ -285,7 +285,7 @@ class TestDerivativeOnMeasurement:
         Derivative is computed on *measurement*, not *error*.
         A sudden change in rate setpoint should NOT cause a derivative spike.
         """
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=1, dt=DT, device="cpu")
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=1, dt=DT, device="cpu")
         rs   = make_root_state(1)
 
         # Step 1: zero rate setpoint
@@ -315,13 +315,13 @@ class TestDerivativeOnMeasurement:
 
 class TestRateGainUpdate:
     def test_set_rate_gains_all_envs(self, cf_config):
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
         new_kp = torch.tensor([100.0, 100.0, 50.0])
         ctrl.set_rate_gains(rate_kp=new_kp)
         assert torch.allclose(ctrl.rate_kp, new_kp)
 
     def test_set_rate_gains_subset(self, cf_config):
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
         original_kp = ctrl.rate_kp.clone()
 
         new_kp  = torch.tensor([999.0, 999.0, 999.0])
@@ -340,7 +340,7 @@ class TestRateGainUpdate:
 
 class TestNumericalStability:
     def test_no_nan_over_many_steps(self, cf_config):
-        ctrl = CrazyfliePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
+        ctrl = CascadePIDController.from_drone_config(cf_config, num_envs=N, dt=DT, device="cpu")
         rs   = make_root_state(N)
         ref  = torch.tensor([[1.0, 0.5, 1.5]] * N)
         for _ in range(500):

@@ -4,10 +4,10 @@
 simulation of N environments simultaneously using PyTorch.
 
 ```python
-from drone import load_config, CrazyfliePIDController
+from drone import load_config, CascadePIDController
 
 cfg  = load_config("configs/crazyflie.yaml")
-ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
+ctrl = CascadePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
 
 thrust, moment = ctrl(root_state, target_pos=ref, command_level="position")
 ```
@@ -40,7 +40,7 @@ thrust, moment = ctrl(root_state, target_pos=ref, command_level="position")
 - [Getting Started](getting-started.md) — install and first example
 - [Architecture](architecture.md) — how the cascade loops work
 - [Firmware Architecture](firmware-architecture.md) — sensor-to-motor pipeline explained
-- [API: CrazyfliePIDController](api/controller.md)
+- [API: CascadePIDController](api/controller.md)
 - [API: LeePositionController](api/lee_controller.md)
 - [API: QuadMixer](api/mixer.md)
 - [API: Rate Profiles](api/rate_profiles.md)

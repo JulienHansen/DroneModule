@@ -84,7 +84,7 @@ controllers:
       z: { kp: 5.0, ki: 0.0, kd: 3.5, tau: 0.10, limit:  5.0 }
 
   # ----------------------------------------------------------
-  # CrazyfliePIDController  (firmware-style multi-rate cascade)
+  # CascadePIDController  (firmware-style multi-rate cascade)
   # ----------------------------------------------------------
   # Gains match pid_attitude.c / pid_position.c from the Crazyflie firmware.
   #
@@ -98,7 +98,7 @@ controllers:
   # multiplies them by DEG2RAD internally, so the numbers here match the
   # firmware's integer register values.
   # ----------------------------------------------------------
-  crazyflie_pid:
+  cascade_pid:
     sim_rate_hz:            500.0   # Expected simulation / call rate [Hz]
     pid_posvel_loop_rate_hz: 100.0  # Position + velocity loop rate [Hz]
     pid_loop_rate_hz:        500.0  # Attitude + rate loop rate [Hz]

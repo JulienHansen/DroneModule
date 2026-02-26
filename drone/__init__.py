@@ -1,4 +1,4 @@
-from .controllers.crazyflie_pid import CrazyfliePIDController
+from .controllers.cascade_pid import CascadePIDController
 from .controllers.pid import PID_Vectorized
 from .controllers.lee_controller import LeePositionController
 from .utils.mixer import QuadMixer
@@ -15,7 +15,7 @@ from .integrators import EulerIntegrator, RK4Integrator, Integrator
 from .forces import ForceModel, Gravity, BodyDrag
 
 __all__ = [
-    "CrazyfliePIDController",
+    "CascadePIDController",
     "LeePositionController",
     "QuadMixer",
     "PID_Vectorized",

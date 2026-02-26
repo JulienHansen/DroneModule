@@ -79,8 +79,8 @@ class TuningResult:
     """
     PID gains computed by pole placement.
 
-    All gains are in the same units as the ``crazyflie_pid`` YAML section
-    and can be passed directly as ``params`` to ``CrazyfliePIDController``.
+    All gains are in the same units as the ``cascade_pid`` YAML section
+    and can be passed directly as ``params`` to ``CascadePIDController``.
     """
 
     # ── Bandwidths used ──────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ class TuningResult:
 
     def to_params(self) -> dict:
         """
-        Return a dict compatible with ``CrazyfliePIDController(params=...)``.
+        Return a dict compatible with ``CascadePIDController(params=...)``.
 
         Feed-forward terms and saturation limits are left at their defaults;
         override them manually if needed.
@@ -197,7 +197,7 @@ def tune_from_physics(
     sim_dt: Optional[float] = None,
 ) -> TuningResult:
     """
-    Compute PID gains for ``CrazyfliePIDController`` via pole placement.
+    Compute PID gains for ``CascadePIDController`` via pole placement.
 
     Parameters
     ----------
@@ -227,7 +227,7 @@ def tune_from_physics(
         Full-scale PWM command value.  Default: 65535 (16-bit).
     vel_thrust_scale : float
         PWM scale factor for the z-velocity output.  Matches
-        ``vel_thrust_scale`` in the YAML ``crazyflie_pid`` section.
+        ``vel_thrust_scale`` in the YAML ``cascade_pid`` section.
     sim_dt : float, optional
         Simulation timestep [s].  When provided, a warning is emitted if any
         bandwidth exceeds ``0.1 / sim_dt`` (10 % of Nyquist).
@@ -236,11 +236,11 @@ def tune_from_physics(
     -------
     TuningResult
         Computed gains and diagnostic information.  Call ``.to_params()`` to
-        get a dict ready for ``CrazyfliePIDController``.
+        get a dict ready for ``CascadePIDController``.
 
     Examples
     --------
-    >>> from drone_control import load_config, CrazyfliePIDController
+    >>> from drone_control import load_config, CascadePIDController
     >>> from drone_control.tuning import tune_from_physics
     >>>
     >>> cfg    = load_config("configs/crazyflie.yaml")
@@ -256,7 +256,7 @@ def tune_from_physics(
     ... )
     >>> print(result)
     >>>
-    >>> ctrl = CrazyfliePIDController.from_drone_config(
+    >>> ctrl = CascadePIDController.from_drone_config(
     ...     cfg, num_envs=1, dt=0.002
     ... )
     >>> ctrl.set_rate_gains(**{k: result.to_params()[k]

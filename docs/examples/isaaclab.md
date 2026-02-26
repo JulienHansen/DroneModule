@@ -99,14 +99,14 @@ def __init__(self, cfg, render_mode=None, **kwargs):
 ## Variant 1 — Full position cascade
 
 **Action space:** `[x, y, z, yaw]`  target position in world frame.
-**Controller:** `CrazyfliePIDController` at `command_level="position"`.
+**Controller:** `CascadePIDController` at `command_level="position"`.
 The full four-level cascade (position → velocity → attitude → rate) runs internally.
 
 ```python
 # ── __init__ ────────────────────────────────────────────────────────────
-from drone import CrazyfliePIDController
+from drone import CascadePIDController
 
-self._ctrl = CrazyfliePIDController.from_drone_config(
+self._ctrl = CascadePIDController.from_drone_config(
     self._drone_cfg,
     num_envs=self.num_envs,
     dt=self.cfg.sim.dt * self.cfg.decimation,   # effective controller dt
@@ -149,7 +149,7 @@ self._ctrl.reset(env_ids)
 ## Variant 2 — Velocity cascade
 
 **Action space:** `[vx, vy, vz, yaw_rate]`  velocity setpoint in world frame.
-**Controller:** `CrazyfliePIDController` at `command_level="velocity"`.
+**Controller:** `CascadePIDController` at `command_level="velocity"`.
 The position loop is bypassed; the agent controls velocity directly.
 
 ```python
@@ -157,7 +157,7 @@ The position loop is bypassed; the agent controls velocity directly.
 MAX_VEL     = 2.0   # m/s
 MAX_YAW_DOT = 90.0 * math.pi / 180.0   # rad/s
 
-self._ctrl = CrazyfliePIDController.from_drone_config(
+self._ctrl = CascadePIDController.from_drone_config(
     self._drone_cfg,
     num_envs=self.num_envs,
     dt=self.cfg.sim.dt * self.cfg.decimation,
@@ -198,7 +198,7 @@ self._ctrl.reset(env_ids)
 ## Variant 3 — Attitude cascade
 
 **Action space:** `[roll_ref, pitch_ref, yaw_rate_ref, thrust_normalized]`.
-**Controller:** `CrazyfliePIDController` at `command_level="attitude"`.
+**Controller:** `CascadePIDController` at `command_level="attitude"`.
 Position and velocity PIDs are bypassed; the agent sets tilt and thrust directly.
 This matches the environment provided as reference.
 
@@ -209,7 +209,7 @@ from isaaclab.utils.math import euler_xyz_from_quat
 MAX_TILT    = 30.0 * math.pi / 180.0
 MAX_YAW_DOT = 90.0 * math.pi / 180.0
 
-self._ctrl = CrazyfliePIDController.from_drone_config(
+self._ctrl = CascadePIDController.from_drone_config(
     self._drone_cfg,
     num_envs=self.num_envs,
     dt=self.cfg.sim.dt * self.cfg.decimation,
@@ -266,7 +266,7 @@ self._ctrl.reset(env_ids)
 ## Variant 4 — Body rate (Acro / Rate mode)
 
 **Action space:** `[roll_rate, pitch_rate, yaw_rate, thrust_normalized]`.
-**Controller:** `CrazyfliePIDController` at `command_level="body_rate"`,
+**Controller:** `CascadePIDController` at `command_level="body_rate"`,
 with an optional **rate profile** shaping the stick input.
 Only the innermost rate PID runs; all outer loops are bypassed.
 
@@ -276,7 +276,7 @@ from drone import betaflight_rate_profile
 
 MAX_RATE = 720.0 * math.pi / 180.0   # rad/s at full stick
 
-self._ctrl = CrazyfliePIDController.from_drone_config(
+self._ctrl = CascadePIDController.from_drone_config(
     self._drone_cfg,
     num_envs=self.num_envs,
     dt=self.cfg.sim.dt * self.cfg.decimation,
@@ -378,10 +378,10 @@ self._ctrl.reset(env_ids)   # no-op for Lee, but keeps code consistent
 
 | Variant | Action | Command level | Controller | Stateful |
 |---|---|---|---|---|
-| Position | `[x, y, z, yaw]` | `"position"` | `CrazyfliePIDController` | Yes |
-| Velocity | `[vx, vy, vz, yaw_rate]` | `"velocity"` | `CrazyfliePIDController` | Yes |
-| Attitude | `[roll, pitch, yaw_rate, T]` | `"attitude"` | `CrazyfliePIDController` | Yes |
-| Body rate | `[p, q, r, T]` | `"body_rate"` | `CrazyfliePIDController` | Yes |
+| Position | `[x, y, z, yaw]` | `"position"` | `CascadePIDController` | Yes |
+| Velocity | `[vx, vy, vz, yaw_rate]` | `"velocity"` | `CascadePIDController` | Yes |
+| Attitude | `[roll, pitch, yaw_rate, T]` | `"attitude"` | `CascadePIDController` | Yes |
+| Body rate | `[p, q, r, T]` | `"body_rate"` | `CascadePIDController` | Yes |
 | Geometric | `[x, y, z, yaw]` | — | `LeePositionController` | No |
 
 !!! tip "Choosing a command level for RL"
@@ -392,7 +392,7 @@ self._ctrl.reset(env_ids)   # no-op for Lee, but keeps code consistent
     - **Lee**: position-level action like Variant 1 but geometrically exact; better for aggressive manoeuvres.
 
 !!! note "Controller timestep vs simulation timestep"
-    The `dt` passed to `CrazyfliePIDController` should be the **effective
+    The `dt` passed to `CascadePIDController` should be the **effective
     control period**, not the physics dt:
 
     ```python
@@ -404,7 +404,7 @@ self._ctrl.reset(env_ids)   # no-op for Lee, but keeps code consistent
 
 !!! note "Resetting integrators"
     Always call `self._ctrl.reset(env_ids)` in `_reset_idx` for
-    `CrazyfliePIDController` — stale integrators from the previous episode
+    `CascadePIDController` — stale integrators from the previous episode
     cause a large spike on the first step of the new one.
 
     ```python

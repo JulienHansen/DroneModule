@@ -53,7 +53,7 @@ Drone(
 | Parameter | Type | Description |
 |---|---|---|
 | `config` | `DroneConfig` | Loaded YAML config |
-| `controller` | callable | Any `(state, **kwargs) → (thrust [N,1], moment [N,3])`. Compatible with `CrazyfliePIDController` and `LeePositionController` |
+| `controller` | callable | Any `(state, **kwargs) → (thrust [N,1], moment [N,3])`. Compatible with `CascadePIDController` and `LeePositionController` |
 | `forces` | `list[ForceModel] \| None` | External force/torque models. Default: `[Gravity(mass)]` |
 | `integrator` | `Integrator \| None` | Numerical integrator. Default: `EulerIntegrator()` |
 | `device` | `str` | PyTorch device |

@@ -295,13 +295,13 @@ class TestWarnings:
 
 
 # ---------------------------------------------------------------------------
-# to_params() integration with CrazyfliePIDController
+# to_params() integration with CascadePIDController
 # ---------------------------------------------------------------------------
 
 class TestToParamsIntegration:
     def test_params_accepted_by_controller(self):
         """to_params() output must be accepted without error by the controller."""
-        from drone import load_config, CrazyfliePIDController
+        from drone import load_config, CascadePIDController
         import os
 
         cfg_path = os.path.join(
@@ -321,7 +321,7 @@ class TestToParamsIntegration:
         params = result.to_params()
 
         # Construct a controller with the tuned params — should not raise
-        ctrl = CrazyfliePIDController(
+        ctrl = CascadePIDController(
             dt=0.002,
             num_envs=2,
             mass=cfg.physics.mass,

@@ -1,12 +1,13 @@
-# CrazyfliePIDController
+# CascadePIDController
 
-Cascaded PID controller modelled after the Crazyflie 2.x firmware.
+Generic 4-level cascaded PID controller for multirotor drones.
+Default gains match the Crazyflie 2.x firmware; fully configurable via YAML.
 
 ```python
-from drone import load_config, CrazyfliePIDController
+from drone import load_config, CascadePIDController
 
 cfg  = load_config("configs/crazyflie.yaml")
-ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
+ctrl = CascadePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
 ```
 
 ---
@@ -14,7 +15,7 @@ ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
 ## Constructor
 
 ```python
-CrazyfliePIDController(
+CascadePIDController(
     dt,
     num_envs,
     device="cpu",
@@ -38,7 +39,7 @@ CrazyfliePIDController(
 ## Class method: `from_drone_config`
 
 ```python
-ctrl = CrazyfliePIDController.from_drone_config(
+ctrl = CascadePIDController.from_drone_config(
     drone_config,   # DroneConfig from load_config()
     num_envs,
     dt,
@@ -47,7 +48,7 @@ ctrl = CrazyfliePIDController.from_drone_config(
 ```
 
 Builds the controller from a loaded YAML config. If the config contains a
-`controllers.crazyflie_pid` section, those gains override the defaults.
+`controllers.cascade_pid` section, those gains override the defaults.
 `thrust_cmd_scale` is derived automatically from `drone.max_thrust`.
 
 ---

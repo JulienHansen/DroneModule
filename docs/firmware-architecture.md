@@ -463,7 +463,7 @@ PX4's key strength is its modular uORB publish-subscribe middleware: any module 
 | Estimation | Mahony (attitude) + EKF (position, using UWB/LPS, optflow, or lighthouse) |
 | Outer loops | Full cascade; position setpoints from CRTP over radio |
 | Mixer | Direct PWM to motor driver (no DShot); software mixer |
-| Rate controller | Cascade PID matching `pid_attitude.c` (matches this package's `CrazyfliePIDController`) |
+| Rate controller | Cascade PID matching `pid_attitude.c` (matches this package's `CascadePIDController`) |
 | INDI | Not standard |
 | Protocols | CRTP over 2.4 GHz radio (custom), USB, UART |
 | Configurator | cfclient Python GUI, `cflib` Python API |
@@ -479,7 +479,7 @@ The `drone` package implements the **control cascade** (Sections 6) and **contro
 ```
 This package:
   PosController_Vectorized   → position + velocity loops (§6.1, §6.2)
-  CrazyfliePIDController     → full cascade (§6.1–6.4) matching Crazyflie firmware
+  CascadePIDController     → full cascade (§6.1–6.4) matching Crazyflie firmware
   LeePositionController      → geometric position + attitude control (§6.3 SO(3) variant)
   QuadMixer                  → control allocation (§7.1)
   betaflight_rate_profile    → RC reference generation (§5.3)

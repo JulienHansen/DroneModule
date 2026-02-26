@@ -142,9 +142,9 @@ class DroneConfig:
     physics:  DronePhysicsConfig
     attitude: AttitudeControllerConfig
     position: PositionControllerConfig
-    # Raw params dict for CrazyfliePIDController.
-    # Present only when the YAML contains a ``controllers.crazyflie_pid`` section.
-    crazyflie_pid: Optional[dict]             = field(default=None)
+    # Raw params dict for CascadePIDController.
+    # Present only when the YAML contains a ``controllers.cascade_pid`` section.
+    cascade_pid: Optional[dict]             = field(default=None)
     # Gains for LeePositionController.
     # Present only when the YAML contains a ``controllers.lee`` section.
     lee:           Optional[LeeControllerConfig] = field(default=None)
@@ -237,8 +237,8 @@ def load_config(path: str | Path) -> DroneConfig:
         ),
     )
 
-    # Optional CrazyfliePIDController params (passed as-is to the controller)
-    crazyflie_pid = raw.get("controllers", {}).get("crazyflie_pid", None)
+    # Optional CascadePIDController params (passed as-is to the controller)
+    cascade_pid = raw.get("controllers", {}).get("cascade_pid", None)
 
     # Optional Lee geometric controller gains
     lee_raw = raw.get("controllers", {}).get("lee", None)
@@ -256,6 +256,6 @@ def load_config(path: str | Path) -> DroneConfig:
         physics=physics,
         attitude=attitude,
         position=position,
-        crazyflie_pid=crazyflie_pid,
+        cascade_pid=cascade_pid,
         lee=lee,
     )

@@ -1,8 +1,13 @@
 """
-CrazyfliePIDController — cascaded PID matching the Crazyflie firmware architecture.
+CascadePIDController — generic 4-level cascaded PID for multirotor drones.
 
-Differences from ``cascade.py``
-────────────────────────────────
+Originally modelled after the Crazyflie 2.x firmware architecture; the default
+gains match ``pid_attitude.c`` / ``pid_position.c`` from the Crazyflie firmware,
+but the controller is fully configurable via the ``cascade_pid`` YAML section and
+works with any quadrotor (Crazyflie, 5-inch freestyle quad, …).
+
+Loop hierarchy
+──────────────
 * Multi-rate loop scheduling (pos/vel @ ~100 Hz, att/rate @ ~500 Hz).
 * Four command levels: ``position``, ``velocity``, ``attitude``, ``body_rate``.
 * Derivative on measurement (no derivative kick on set-point steps).
@@ -14,9 +19,9 @@ Differences from ``cascade.py``
 
 Usage
 -----
->>> from drone_control import load_config, CrazyfliePIDController
+>>> from drone_control import load_config, CascadePIDController
 >>> cfg  = load_config("configs/crazyflie.yaml")
->>> ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=4, dt=0.002, device="cpu")
+>>> ctrl = CascadePIDController.from_drone_config(cfg, num_envs=4, dt=0.002, device="cpu")
 >>> thrust, moment = ctrl(root_state, target_pos=ref_pos, command_level="position")
 
 ``root_state`` has shape ``[N, 13]`` = ``[pos(3), quat(4), lin_vel(3), ang_vel(3)]``.
@@ -91,9 +96,9 @@ def _wrap_angle_rad(angle: torch.Tensor) -> torch.Tensor:
 # Main controller
 # ---------------------------------------------------------------------------
 
-class CrazyfliePIDController:
+class CascadePIDController:
     """
-    Cascaded PID controller modelled after the Crazyflie 2.x firmware.
+    Generic 4-level cascaded PID controller for multirotor drones.
 
     Loop hierarchy
     ──────────────
@@ -114,7 +119,7 @@ class CrazyfliePIDController:
         PyTorch device string.
     params : dict, optional
         Override any gain or limit.  See ``DEFAULT_GAINS`` / ``DEFAULT_LIMITS``
-        for available keys.  Values from a YAML ``crazyflie_pid`` section can
+        for available keys.  Values from a YAML ``cascade_pid`` section can
         be passed directly.
     """
 
@@ -265,19 +270,19 @@ class CrazyfliePIDController:
         num_envs: int,
         dt: float,
         device: str = "cpu",
-    ) -> "CrazyfliePIDController":
+    ) -> "CascadePIDController":
         """
         Build from a :class:`~drone_control.config.loader.DroneConfig`.
 
-        If the config contains a ``crazyflie_pid`` section (YAML key
-        ``controllers.crazyflie_pid``), those params override the defaults.
+        If the config contains a ``cascade_pid`` section (YAML key
+        ``controllers.cascade_pid``), those params override the defaults.
 
         Example
         -------
         >>> cfg  = load_config("configs/crazyflie.yaml")
-        >>> ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
+        >>> ctrl = CascadePIDController.from_drone_config(cfg, num_envs=4, dt=0.002)
         """
-        params = getattr(drone_config, "crazyflie_pid", None) or {}
+        params = getattr(drone_config, "cascade_pid", None) or {}
         phys   = drone_config.physics
 
         ctrl = cls(

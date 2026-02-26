@@ -9,7 +9,7 @@ and returns:
     [N, 3]  body-rate setpoints in **rad/s**
 
 Internal computation follows firmware conventions (deg/s); the output is
-converted to rad/s so it can be passed directly to ``CrazyfliePIDController``
+converted to rad/s so it can be passed directly to ``CascadePIDController``
 or ``LeePositionController`` as ``target_body_rates``.
 
 Default parameters reproduce the factory presets of each firmware.

@@ -1,5 +1,5 @@
 """
-Visual integration tests for CrazyfliePIDController.
+Visual integration tests for CascadePIDController.
 
 Each test runs a closed-loop simulation, asserts numerical convergence,
 and saves a plot to tests/plots/ (uploaded as CI artefact).
@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 import pytest
 import torch
 
-from drone import load_config, CrazyfliePIDController
+from drone import load_config, CascadePIDController
 
 PLOTS_DIR = Path(__file__).parent / "plots"
 DT   = 0.002
@@ -44,8 +44,8 @@ G    = 9.81
 # Shared factory
 # ---------------------------------------------------------------------------
 
-def _make_ctrl(cf_config) -> CrazyfliePIDController:
-    ctrl = CrazyfliePIDController.from_drone_config(
+def _make_ctrl(cf_config) -> CascadePIDController:
+    ctrl = CascadePIDController.from_drone_config(
         cf_config, num_envs=N, dt=DT, device="cpu"
     )
     # Zero rate derivative: the firmware value is tuned for filtered hardware
@@ -120,7 +120,7 @@ class TestPositionStepResponse:
         ax1.axhline(target[0], color="C0", ls="--", lw=0.8)
         ax1.axhline(target[2], color="C1", ls="--", lw=0.8)
         ax1.set_ylabel("Position [m]"); ax1.legend(); ax1.grid(True)
-        ax1.set_title("Position step response — CrazyfliePIDController")
+        ax1.set_title("Position step response — CascadePIDController")
 
         ax2.plot(h["t"], h["thrust"])
         ax2.axhline(0.027 * 9.81, color="gray", ls="--", lw=0.8, label="m·g")
@@ -187,7 +187,7 @@ class TestAttitudeStepResponse:
         ax.plot(h["t"], h["omega_y"], label="ω_y (pitch)")
         ax.axhline(target_roll_rate, color="C0", ls="--", lw=0.8, label="setpoint")
         ax.set_xlabel("Time [s]"); ax.set_ylabel("Body rate [rad/s]")
-        ax.set_title("Body-rate step response — CrazyfliePIDController")
+        ax.set_title("Body-rate step response — CascadePIDController")
         ax.legend(); ax.grid(True)
         fig.tight_layout()
         fig.savefig(PLOTS_DIR / "attitude_step_response.png", dpi=120)
@@ -229,7 +229,7 @@ class TestYawRateIntegration:
         fig, ax = plt.subplots(figsize=(8, 4))
         ax.plot(h["t"], h["yaw_sp"])
         ax.set_xlabel("Time [s]"); ax.set_ylabel("Yaw setpoint [rad]")
-        ax.set_title("Yaw-rate integration — CrazyfliePIDController")
+        ax.set_title("Yaw-rate integration — CascadePIDController")
         ax.grid(True)
         fig.tight_layout()
         fig.savefig(PLOTS_DIR / "yaw_rate_integration.png", dpi=120)

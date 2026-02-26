@@ -8,7 +8,7 @@ A config file has these sections:
 | `drone.motor` | No | `QuadMixer` |
 | `controllers.attitude` | Yes | `AttitudeControllerConfig` |
 | `controllers.position` | Yes | `PositionControllerConfig` |
-| `controllers.crazyflie_pid` | No | `CrazyfliePIDController` |
+| `controllers.cascade_pid` | No | `CascadePIDController` |
 | `controllers.lee` | No | `LeePositionController` |
 
 ---
@@ -48,16 +48,16 @@ For the Crazyflie 2.1 these values come from Förster (2015).
 
 ---
 
-## `controllers.crazyflie_pid` — CrazyfliePIDController gains
+## `controllers.cascade_pid` — CascadePIDController gains
 
 This section is passed directly as the `params` dict to
-`CrazyfliePIDController`. All fields are optional; missing fields fall back
+`CascadePIDController`. All fields are optional; missing fields fall back
 to the built-in firmware defaults.
 
 ### Loop rates
 
 ```yaml
-crazyflie_pid:
+cascade_pid:
   sim_rate_hz:             500.0   # expected call rate of the controller [Hz]
   pid_posvel_loop_rate_hz: 100.0   # position + velocity loop rate [Hz]
   pid_loop_rate_hz:        500.0   # attitude + rate loop rate [Hz]
@@ -207,11 +207,11 @@ Units: rate loop [rad/s²], angle loop [rad/s].
 2. Update the `drone` section (mass, inertia, max_thrust).
 3. Update `drone.motor` if you plan to use `QuadMixer` (measure `k_thrust`
    and `k_drag` on a thrust stand, or use manufacturer data).
-4. Tune the `crazyflie_pid` gains using `tune_from_physics`
+4. Tune the `cascade_pid` gains using `tune_from_physics`
    (see the [tuning guide](../tuning.md)) or manually.
 5. Load it:
    ```python
    cfg   = load_config("configs/my_drone.yaml")
-   ctrl  = CrazyfliePIDController.from_drone_config(cfg, num_envs=N, dt=dt)
+   ctrl  = CascadePIDController.from_drone_config(cfg, num_envs=N, dt=dt)
    mixer = QuadMixer.from_drone_config(cfg)
    ```

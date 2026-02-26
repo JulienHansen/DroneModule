@@ -33,7 +33,7 @@ Matching coefficients:
 
 ## Loop hierarchy
 
-The `CrazyfliePIDController` has four nested loops.  They must be tuned
+The `CascadePIDController` has four nested loops.  They must be tuned
 from the **inside out** and each outer loop must be **at least 5× slower**
 than the loop it wraps, otherwise they interact and the system can become
 unstable.
@@ -135,7 +135,7 @@ class TuningResult:
 
 ### `.to_params() → dict`
 
-Returns a dict compatible with `CrazyfliePIDController(params=...)`.
+Returns a dict compatible with `CascadePIDController(params=...)`.
 Feed-forward terms and saturation limits keep their controller defaults.
 
 ### `.summary() → str`
@@ -147,7 +147,7 @@ Prints a human-readable table of all gains, bandwidths, and any warnings.
 ## Example
 
 ```python
-from drone import load_config, CrazyfliePIDController
+from drone import load_config, CascadePIDController
 from drone import tune_from_physics
 
 cfg = load_config("configs/crazyflie.yaml")
@@ -197,7 +197,7 @@ Output:
 Apply only the rate gains while keeping the rest at defaults:
 
 ```python
-ctrl = CrazyfliePIDController.from_drone_config(cfg, num_envs=1, dt=0.002)
+ctrl = CascadePIDController.from_drone_config(cfg, num_envs=1, dt=0.002)
 ctrl.set_rate_gains(
     rate_kp=result.to_params()["rate_kp"],
     rate_ki=result.to_params()["rate_ki"],
@@ -207,7 +207,7 @@ ctrl.set_rate_gains(
 Or pass all gains at construction time:
 
 ```python
-ctrl = CrazyfliePIDController(
+ctrl = CascadePIDController(
     num_envs=1, dt=0.002,
     mass=cfg.physics.mass,
     inertia=[cfg.physics.inertia.ixx,

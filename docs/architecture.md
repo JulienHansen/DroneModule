@@ -2,7 +2,7 @@
 
 ## Loop hierarchy
 
-`CrazyfliePIDController` implements a **4-level cascaded PID** architecture
+`CascadePIDController` implements a **4-level cascaded PID** architecture
 that mirrors the Crazyflie 2.x firmware:
 
 ```

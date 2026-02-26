@@ -159,7 +159,7 @@ Rate profile output feeds directly into the innermost loop of any
 controller that accepts `body_rate` commands:
 
 ```python
-from drone import CrazyfliePIDController, betaflight_rate_profile
+from drone import CascadePIDController, betaflight_rate_profile
 
 stick     = rc_input[..., :3]              # [N, 3]  normalised
 omega_sp  = betaflight_rate_profile(stick) # [N, 3]  rad/s

@@ -4,7 +4,7 @@ Discrete-time PID controller, vectorized over N environments.
 A single class covers both use cases in this package:
 
 * **Single-axis** (used by ``cascade.py``): gains are scalars, state is ``[N]``.
-* **Multi-axis** (used by ``crazyflie_pid.py``): gains are length-3 tensors,
+* **Multi-axis** (used by ``cascade_pid.py``): gains are length-3 tensors,
   state is ``[N, 3]`` — one instance handles all three axes at once.
 
 Key features
