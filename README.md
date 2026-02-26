@@ -1,4 +1,14 @@
-# drone-control
+---
+<div align="center">
+  <img src="https://github.com/JulienHansen/DroneModule/blob/main/docs/assets/banner.png"
+       alt="Pearl's banner"
+       width="1200"
+       height="800" />
+</div>
+
+---
+
+# DroneModule - Pytorch tools for Drone Simulation
 
 A modular Python library for quadrotor cascade PID control, designed for
 simulation and reinforcement learning research.
