@@ -127,6 +127,12 @@ controllers:
     rate_kd:  [  2.5,   2.5,   0.0]
     rate_kff: [  0.0,   0.0,   0.0]
 
+    # ── Gyroscope low-pass filter ──────────────────────────────────────────
+    # Matches the Crazyflie firmware Butterworth LPF on the gyro (~80 Hz).
+    # Applied only to the derivative path of the rate loop.
+    # Set to 0 to disable.
+    gyro_lpf_cutoff_hz: 20.0
+
     # ── Saturation limits ──────────────────────────────────────────────────
     att_integral_limit_deg:  [20.0, 20.0, 360.0]   # per-axis integral cap [deg]
     rate_integral_limit_deg: [33.3, 33.3, 166.7]   # per-axis integral cap [deg/s]

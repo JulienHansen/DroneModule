@@ -227,6 +227,17 @@ class CrazyfliePIDController:
         self.thrust_max_cmd      = float(params.get("thrust_max",   thrust_cmd_max))
         self._thrust_base_from_params = "thrust_base" in params or "thrustBase" in params
 
+        # ── Gyroscope low-pass filter ─────────────────────────────────────────
+        # Matches the Crazyflie firmware's gyro LPF (Butterworth ~80 Hz).
+        # Smooths angular-rate measurements before derivative computation to
+        # prevent kd from amplifying discrete simulation steps.
+        # Set gyro_lpf_cutoff_hz: 0 in the YAML to disable.
+        _gyro_lpf_hz = float(params.get("gyro_lpf_cutoff_hz", 80.0))
+        if _gyro_lpf_hz > 0.0:
+            self._gyro_lpf_alpha = math.exp(-2.0 * math.pi * _gyro_lpf_hz * self.dt)
+        else:
+            self._gyro_lpf_alpha = 0.0  # α=0 → no smoothing (pass-through)
+
         # ── Mutable buffers (lazy-initialised in _ensure_buffers) ────────────
         self._step_count:   int                       = 0
         self._vel_sp:       Optional[torch.Tensor]    = None
@@ -234,8 +245,9 @@ class CrazyfliePIDController:
         self._rate_sp:      Optional[torch.Tensor]    = None
         self._thrust_cmd:   Optional[torch.Tensor]    = None
         self._yaw_sp:       Optional[torch.Tensor]    = None
-        self._rate_integral:  Optional[torch.Tensor]  = None
-        self._prev_rate_meas: Optional[torch.Tensor]  = None
+        self._rate_integral:      Optional[torch.Tensor] = None
+        self._prev_rate_meas:     Optional[torch.Tensor] = None
+        self._rate_meas_filtered: Optional[torch.Tensor] = None
 
         self._command_handlers = {
             "position":  self._cmd_position,
@@ -347,16 +359,17 @@ class CrazyfliePIDController:
         """Reset all integrators.  Pass ``env_ids`` to reset only a subset."""
         if env_ids is None:
             self.pos_pid.reset(); self.vel_pid.reset(); self.att_pid.reset()
-            self._rate_integral   = None
-            self._prev_rate_meas  = None
+            self._rate_integral       = None
+            self._prev_rate_meas      = None
+            self._rate_meas_filtered  = None
             self._vel_sp = self._att_sp = self._rate_sp = self._thrust_cmd = self._yaw_sp = None
             self._step_count = 0
             return
 
         ids = env_ids.to(dtype=torch.long, device=self.device)
         self.pos_pid.reset(ids); self.vel_pid.reset(ids); self.att_pid.reset(ids)
-        for buf in (self._rate_integral, self._prev_rate_meas, self._vel_sp,
-                    self._att_sp, self._rate_sp):
+        for buf in (self._rate_integral, self._prev_rate_meas, self._rate_meas_filtered,
+                    self._vel_sp, self._att_sp, self._rate_sp):
             if buf is not None:
                 buf[ids] = 0.0
         if self._thrust_cmd is not None:
@@ -541,9 +554,20 @@ class CrazyfliePIDController:
         gyroscopic term ω × (J·ω) compensates for the coupling between axes.
         """
         if self._rate_integral is None or self._rate_integral.shape != rate_sp.shape:
-            self._rate_integral   = torch.zeros_like(rate_sp)
+            self._rate_integral = torch.zeros_like(rate_sp)
+
+        # ── Gyroscope low-pass filter ─────────────────────────────────────
+        # Applied only to the derivative path; error uses the raw measurement.
+        if self._rate_meas_filtered is None or self._rate_meas_filtered.shape != rate_meas.shape:
+            self._rate_meas_filtered = rate_meas.clone()
+        else:
+            self._rate_meas_filtered = (
+                self._gyro_lpf_alpha * self._rate_meas_filtered
+                + (1.0 - self._gyro_lpf_alpha) * rate_meas
+            )
+
         if self._prev_rate_meas is None or self._prev_rate_meas.shape != rate_meas.shape:
-            self._prev_rate_meas  = rate_meas.clone()
+            self._prev_rate_meas = self._rate_meas_filtered.clone()
 
         rate_error = rate_sp - rate_meas
         self._rate_integral = torch.clamp(
@@ -552,8 +576,8 @@ class CrazyfliePIDController:
              expand_to(self._rate_integral_limit, self._rate_integral),
         )
 
-        rate_meas_dot        = (rate_meas - self._prev_rate_meas) / self.dt
-        self._prev_rate_meas = rate_meas.clone()
+        rate_meas_dot        = (self._rate_meas_filtered - self._prev_rate_meas) / self.dt
+        self._prev_rate_meas = self._rate_meas_filtered.clone()
 
         omega_dot = (
             self.rate_kp * rate_error
