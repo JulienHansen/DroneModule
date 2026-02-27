@@ -136,9 +136,9 @@ controllers:
     # ── Saturation limits ──────────────────────────────────────────────────
     att_integral_limit_deg:  [20.0, 20.0, 360.0]   # per-axis integral cap [deg]
     rate_integral_limit_deg: [33.3, 33.3, 166.7]   # per-axis integral cap [deg/s]
-    pos_vel_max: [1.0, 1.0, 1.0]                   # max velocity setpoint [m/s]
-    roll_max_deg:  20.0
-    pitch_max_deg: 20.0
+    pos_vel_max: [2.0, 2.0, 1.5]                   # max velocity setpoint [m/s]
+    roll_max_deg:  30.0
+    pitch_max_deg: 30.0
     yaw_max_delta: 0.0   # 0 = unlimited yaw rate
 
     # ── Thrust  (Crazyflie PWM units: 0 – 65 535) ─────────────────────────
